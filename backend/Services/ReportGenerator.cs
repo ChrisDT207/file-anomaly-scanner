@@ -1,0 +1,62 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using FileAnomalyScanner.Interfaces;
+using FileAnomalyScanner.Models;
+
+namespace FileAnomalyScanner.Services
+{
+    public class ReportGenerator : IReportGenerator
+    {
+        public ScanReportDto GenerateReport(
+            List<FileAnomalyRecord> anomalies,
+            List<string> consoleLogs,
+            int totalFiles,
+            long totalBytes,
+            double durationMs)
+        {
+            var summary = new ScanSummaryDto
+            {
+                TotalFilesScanned = totalFiles,
+                TotalBytesScanned = totalBytes,
+                TotalAnomaliesFound = anomalies.Count,
+                CriticalCount = anomalies.Count(a => a.Severity == AnomalySeverity.Critical),
+                HighCount = anomalies.Count(a => a.Severity == AnomalySeverity.High),
+                MediumCount = anomalies.Count(a => a.Severity == AnomalySeverity.Medium),
+                LowCount = anomalies.Count(a => a.Severity == AnomalySeverity.Low),
+                InfoCount = anomalies.Count(a => a.Severity == AnomalySeverity.Info),
+                DurationMs = Math.Round(durationMs, 2),
+                ScanCompletedAt = DateTime.UtcNow
+            };
+
+            var timestamp = DateTime.UtcNow.ToString("HH:mm:ss.fff");
+            consoleLogs.Add($"[{timestamp}] [REPORT] Scan completed in {durationMs:F1}ms.");
+            consoleLogs.Add($"[{timestamp}] [REPORT] Total Files: {totalFiles} | Total Data: {FormatBytes(totalBytes)}.");
+            consoleLogs.Add($"[{timestamp}] [REPORT] Anomalies Flagged: {anomalies.Count} (Critical: {summary.CriticalCount}, High: {summary.HighCount}, Medium: {summary.MediumCount}, Low: {summary.LowCount}).");
+
+            if (anomalies.Count == 0)
+            {
+                consoleLogs.Add($"[{timestamp}] [REPORT] STATUS: CLEAN. No structural or heuristic anomalies detected.");
+            }
+            else
+            {
+                consoleLogs.Add($"[{timestamp}] [REPORT] STATUS: ATTENTION REQUIRED. Detected {anomalies.Count} security anomaly/anomalies.");
+            }
+
+            return new ScanReportDto
+            {
+                Summary = summary,
+                Anomalies = anomalies,
+                ConsoleLogs = consoleLogs,
+                Success = true
+            };
+        }
+
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes < 1024) return $"{bytes} B";
+            if (bytes < 1024 * 1024) return $"{(bytes / 1024.0):F2} KB";
+            return $"{(bytes / (1024.0 * 1024.0)):F2} MB";
+        }
+    }
+}

@@ -1,0 +1,75 @@
+2026-09-23 09:30:43.817: [INFO] CurrentProfilePath: C:\Users\chris\.gemini\antigravity-ide\scratch\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 09:30:43.817: [INFO] Profiles total count: 1
+2026-09-23 09:30:43.817: [INFO] Profile: name=Profile 1 path=C:\Users\chris\.gemini\antigravity-ide\scratch\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=null
+2026-09-23 09:30:43.817: [INFO] LastUsedProfileDir: C:\Users\chris\.gemini\antigravity-ide\scratch\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 09:30:43.817: [INFO] OnDoneLoading sync enabled: 0
+2026-09-23 09:30:43.817: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-09-23 09:30:43.817: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-09-23 09:30:43.817: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 09:47:36.683: [INFO] CurrentProfilePath: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 09:47:36.683: [INFO] Profiles total count: 1
+2026-09-23 09:47:36.683: [INFO] Profile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=null
+2026-09-23 09:47:36.683: [INFO] LastUsedProfileDir: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 09:47:36.683: [INFO] OnDoneLoading sync enabled: 0
+2026-09-23 09:47:36.683: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-09-23 09:47:36.683: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-09-23 09:47:36.683: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 09:47:43.055: [INFO] BookmarksSnapshot Shutdown total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 09:58:57.135: [INFO] CurrentProfilePath: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 09:58:57.135: [INFO] Profiles total count: 1
+2026-09-23 09:58:57.135: [INFO] Profile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T09:47:39.179Z
+2026-09-23 09:58:57.135: [INFO] LastUsedProfileDir: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 09:58:57.135: [INFO] MostRecentlyActiveProfile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T09:47:39.179Z
+2026-09-23 09:58:57.135: [INFO] OnDoneLoading sync enabled: 0
+2026-09-23 09:58:57.135: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-09-23 09:58:57.135: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-09-23 09:58:57.135: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 10:00:06.643: [INFO] BookmarksSnapshot Shutdown total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 10:03:33.138: [INFO] CurrentProfilePath: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 10:03:33.138: [INFO] Profiles total count: 1
+2026-09-23 10:03:33.139: [INFO] Profile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T10:00:03.956Z
+2026-09-23 10:03:33.139: [INFO] LastUsedProfileDir: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 10:03:33.139: [INFO] MostRecentlyActiveProfile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T10:00:03.956Z
+2026-09-23 10:03:33.139: [INFO] OnDoneLoading sync enabled: 0
+2026-09-23 10:03:33.139: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-09-23 10:03:33.139: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-09-23 10:03:33.139: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 10:04:13.907: [INFO] BookmarksSnapshot Shutdown total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 10:07:41.710: [INFO] CurrentProfilePath: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 10:07:41.710: [INFO] Profiles total count: 1
+2026-09-23 10:07:41.710: [INFO] Profile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T10:04:10.921Z
+2026-09-23 10:07:41.710: [INFO] LastUsedProfileDir: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 10:07:41.710: [INFO] MostRecentlyActiveProfile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T10:04:10.921Z
+2026-09-23 10:07:41.710: [INFO] OnDoneLoading sync enabled: 0
+2026-09-23 10:07:41.710: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-09-23 10:07:41.710: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-09-23 10:07:41.710: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 10:08:58.864: [INFO] BookmarksSnapshot Shutdown total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 10:09:15.423: [INFO] CurrentProfilePath: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 10:09:15.423: [INFO] Profiles total count: 1
+2026-09-23 10:09:15.423: [INFO] Profile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T10:08:56.443Z
+2026-09-23 10:09:15.423: [INFO] LastUsedProfileDir: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 10:09:15.423: [INFO] MostRecentlyActiveProfile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T10:08:56.443Z
+2026-09-23 10:09:15.423: [INFO] OnDoneLoading sync enabled: 0
+2026-09-23 10:09:15.423: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-09-23 10:09:15.423: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-09-23 10:09:15.423: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 10:18:40.059: [INFO] CurrentProfilePath: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 10:18:40.059: [INFO] Profiles total count: 1
+2026-09-23 10:18:40.060: [INFO] Profile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T10:09:22.378Z
+2026-09-23 10:18:40.060: [INFO] LastUsedProfileDir: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 10:18:40.060: [INFO] MostRecentlyActiveProfile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T10:09:22.378Z
+2026-09-23 10:18:40.060: [INFO] OnDoneLoading sync enabled: 0
+2026-09-23 10:18:40.060: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-09-23 10:18:40.060: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-09-23 10:18:40.060: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 10:22:32.303: [INFO] CurrentProfilePath: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 10:22:32.303: [INFO] Profiles total count: 1
+2026-09-23 10:22:32.303: [INFO] Profile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T10:09:22.378Z
+2026-09-23 10:22:32.303: [INFO] LastUsedProfileDir: C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default
+2026-09-23 10:22:32.303: [INFO] MostRecentlyActiveProfile: name=Profile 1 path=C:\Users\chris\OneDrive\Desktop\Projects\Personal-Projects\file-anomaly-scanner\backend\bin\Debug\net8.0-windows\FileAnomalyScanner.exe.WebView2\EBWebView\Default lastActive=2026-09-23T10:09:22.378Z
+2026-09-23 10:22:32.303: [INFO] OnDoneLoading sync enabled: 0
+2026-09-23 10:22:32.303: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-09-23 10:22:32.303: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-09-23 10:22:32.303: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-09-23 10:22:37.488: [INFO] BookmarksSnapshot Shutdown total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1

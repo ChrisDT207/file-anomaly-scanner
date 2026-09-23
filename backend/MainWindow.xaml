@@ -1,0 +1,18 @@
+<Window x:Class="FileAnomalyScanner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        mc:Ignorable="d"
+        Title="File Anomaly Scanner - Desktop Edition"
+        Height="720" Width="1180"
+        MinHeight="550" MinWidth="850"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="SingleBorderWindow"
+        ResizeMode="CanResize"
+        Background="#F7F7F7">
+	<Grid>
+		<wv2:WebView2 x:Name="ScannerWebView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+	</Grid>
+</Window>
