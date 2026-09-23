@@ -1,0 +1,41 @@
+# =========================================================================
+# File Anomaly Scanner - Git Ignore Rules
+# =========================================================================
+
+# --- Visual Studio & IDE Caches ---
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vscode/
+
+# --- .NET Build Outputs & Debug Symbols ---
+**/[Bb]in/
+**/[Oo]bj/
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+
+# --- WebView2 User Profile & Telemetry Data ---
+*.WebView2/
+EBWebView/
+
+# --- Frontend / Node ---
+**/node_modules/
+**/dist/
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Operating System Files ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# --- Allow the 1-Click Desktop Launcher Executable in the Root ---
+!/FileAnomalyScanner.exe
