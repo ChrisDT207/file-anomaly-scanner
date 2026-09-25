@@ -4,9 +4,9 @@ A security analysis desktop & web dashboard that combines **deep heuristic struc
 
 ---
 
-## 🌟 Major New Features
+## Major New Features
 
-### 1. 🦠 VirusTotal v3 Antivirus Engine Integration
+### 1. VirusTotal v3 Antivirus Engine Integration
 The scanner now checks files against **70+ industry-leading antivirus engines** (including Microsoft Defender, Kaspersky, CrowdStrike, Sophos, Bitdefender, Symantec, ESET, and Fortinet) to catch known malware, trojans, ransomware, and exploits:
 - **Instant SHA-256 Calculation**: Automatically generates cryptographic SHA-256 hashes for all dropped or selected files.
 - **Multi-Engine AV Lookup**: Queries the VirusTotal v3 REST API to retrieve real-time detection ratios (e.g. `58/72 AV Engines Malicious`).
@@ -14,7 +14,7 @@ The scanner now checks files against **70+ industry-leading antivirus engines** 
 - **Smart Rate-Limit Guard & Caching**: Designed for VirusTotal's free community tier (4 queries/min, 500/day). Uses in-memory caching and prioritizes anomalous files so scans never hang.
 - **Zero-Key Fallback**: Even without an API key, SHA-256 hashes are computed for every file with a 1-click **"Lookup on VirusTotal ↗"** link to view or submit files on the web.
 
-### 2. 🛡️ Google Safe Browsing v4 Threat Intelligence
+### 2. Google Safe Browsing v4 Threat Intelligence
 Many weaponized files (such as PowerShell droppers, batch files, macros, PDFs, or HTML attachments) do not contain the final binary payload locally; instead, they embed external links to download stages or connect to Command-and-Control (C2) servers:
 - **Embedded URL Extractor**: Automatically parses text files, scripts (`.ps1`, `.bat`, `.vbs`, `.js`, `.py`, `.sh`), HTML, documents, and configs for embedded web URLs and endpoints.
 - **Real-Time Blacklist Verification**: Queries Google's Safe Browsing v4 API (`threatMatches:find`) across four threat categories:
@@ -26,7 +26,7 @@ Many weaponized files (such as PowerShell droppers, batch files, macros, PDFs, o
 
 ---
 
-## 🔍 Heuristic & Structural Anomaly Engine
+## Heuristic & Structural Anomaly Engine
 In addition to antivirus APIs, the scanner maintains its core heuristic inspection engine:
 - **Header vs. Extension Validation**: Detects file extension spoofing (e.g., Windows PE executables disguised as `.png`, `.jpg`, `.pdf`, `.docx`).
 - **Deceptive Naming Detection**: Flags RTLO Unicode override characters (`U+202E`) and double extensions (e.g. `Report.pdf.exe`).
@@ -37,7 +37,7 @@ In addition to antivirus APIs, the scanner maintains its core heuristic inspecti
 
 ---
 
-## ⚙️ Threat Intelligence & API Configuration
+## Threat Intelligence & API Configuration
 
 Click the **⚙️ API Settings** button in the header bar to configure your API keys:
 
@@ -54,7 +54,7 @@ Click the **⚙️ API Settings** button in the header bar to configure your API
 
 ---
 
-## 🚀 How to Run
+## How to Run
 
 ### Option 1: 1-Click Desktop App (Easiest)
 Simply double-click:
@@ -77,9 +77,9 @@ located directly in the root folder. It immediately launches the native desktop 
 
 ---
 
-## 🧪 Built-in Synthetic Test Suite
+## Built-in Synthetic Test Suite
 
-Click **🧪 Load Synthetic Test Folder** in the top bar to test the complete detection pipeline with 7 pre-configured test items:
+Click **Load Synthetic Test Folder** in the top bar to test the complete detection pipeline with 7 pre-configured test items:
 1. `eicar_antivirus_test.com.txt`: The official EICAR antivirus test file (harmless string recognized across 65+ AV engines on VirusTotal).
 2. `updater_c2_test.ps1`: Script containing Google's official Safe Browsing malware test URL.
 3. `logo_banner.png`: Masqueraded Windows PE executable disguised with a `.png` image extension.
