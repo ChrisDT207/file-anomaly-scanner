@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import VendorDetectionsModal from './VendorDetectionsModal';
 import UploadConsentModal from './UploadConsentModal';
+import SandboxAlertModal from './SandboxAlertModal';
+import { detonateInSandbox } from '../utils/apiService';
 
 export default function AnomalyTable({ anomalies, summary, files, fileItems = [], onLog }) {
   const [activeTab, setActiveTab] = useState('threats'); // 'threats' | 'allFiles'
@@ -9,6 +11,8 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedVtItem, setSelectedVtItem] = useState(null);
   const [consentUploadItem, setConsentUploadItem] = useState(null);
+  const [sandboxAlert, setSandboxAlert] = useState(null);
+  const [isDetonating, setIsDetonating] = useState(false);
   const [copiedHash, setCopiedHash] = useState(null);
 
   const getFileObject = (item) => {
@@ -17,6 +21,41 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
       (f) => f.relativePath === item.filePath || f.file?.name === item.fileName
     );
     return match ? match.file : null;
+  };
+
+  const handleDetonate = async (item) => {
+    if (isDetonating) return;
+    setIsDetonating(true);
+    const fileObj = getFileObject(item);
+    const targetName = item.fileName || item.filePath || 'selected file';
+
+    if (onLog) {
+      onLog(`[SANDBOX] Preparing isolated Windows Sandbox container for '${targetName}'...`);
+    }
+
+    try {
+      const res = await detonateInSandbox(item.filePath, fileObj);
+      setSandboxAlert({
+        type: 'success',
+        title: 'Windows Sandbox Launched',
+        message: res.message,
+        wsbConfig: res.wsbConfig
+      });
+      if (onLog) {
+        onLog(`[SANDBOX] [SUCCESS] Windows Sandbox launched (Air-Gapped, Read-Only).`);
+      }
+    } catch (err) {
+      setSandboxAlert({
+        type: 'error',
+        title: 'Windows Sandbox Unavailable',
+        message: err.message
+      });
+      if (onLog) {
+        onLog(`[SANDBOX] [ERROR] ${err.message}`);
+      }
+    } finally {
+      setIsDetonating(false);
+    }
   };
 
   const severityLabels = {
@@ -379,6 +418,19 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
                       <td className="cell-threat-intel">
                         {renderVtBadge(item)}
                         {renderSafeBrowsingBadge(item)}
+                        {(item.severity >= 3 || item.category?.includes('Antivirus') || item.category?.includes('Zero-Day') || item.category?.includes('Safe Browsing')) && (
+                          <div style={{ marginTop: '4px' }}>
+                            <button
+                              type="button"
+                              className="btn-detonate"
+                              onClick={() => handleDetonate(item)}
+                              disabled={isDetonating}
+                              title="Launch in isolated, air-gapped Windows Sandbox VM (Read-Only host filesystem)"
+                            >
+                              📦 Detonate in Sandbox
+                            </button>
+                          </div>
+                        )}
                       </td>
                       <td className="cell-hash font-mono">
                         {sha ? (
@@ -509,7 +561,22 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
                       </td>
                       <td className="cell-entropy">{file.entropy ? `${file.entropy.toFixed(2)}` : '—'}</td>
                       <td>{file.detectedType || '—'}</td>
-                      <td>{renderVtBadge(file)}</td>
+                      <td>
+                        {renderVtBadge(file)}
+                        {(file.highestSeverity >= 3 || file.isNovelZeroDaySuspicion || file.status?.includes('Malicious') || file.status?.includes('High')) && (
+                          <div style={{ marginTop: '4px' }}>
+                            <button
+                              type="button"
+                              className="btn-detonate"
+                              onClick={() => handleDetonate(file)}
+                              disabled={isDetonating}
+                              title="Launch in isolated, air-gapped Windows Sandbox VM (Read-Only host filesystem)"
+                            >
+                              📦 Detonate in Sandbox
+                            </button>
+                          </div>
+                        )}
+                      </td>
                       <td>{renderSafeBrowsingBadge(file) || <span className="badge-pass">Clean</span>}</td>
                     </tr>
                   );
@@ -539,6 +606,14 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
               onLog(`[THREAT INTEL] Submitted '${consentUploadItem.fileName}' to VirusTotal. Analysis ID: ${res.analysisId || 'Queued'}`);
             }
           }}
+        />
+      )}
+
+      {/* Windows Sandbox Status & Alert Modal */}
+      {sandboxAlert && (
+        <SandboxAlertModal
+          alert={sandboxAlert}
+          onClose={() => setSandboxAlert(null)}
         />
       )}
     </div>

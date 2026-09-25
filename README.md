@@ -47,6 +47,14 @@ Replaces fragile regex with the official Microsoft PowerShell compiler parser (`
 - **Heavy Concatenation Tree Detection**: Analyzes `BinaryExpressionAst` trees to identify automated obfuscation tools (e.g. Invoke-Obfuscation).
 - **Recursive Base64 Payload De-obfuscation**: Automatically extracts, decodes, and recursively runs AST analysis on embedded encoded script blocks.
 
+### 6. Dynamic Windows Sandbox Detonation (.wsb Architecture)
+Allows security engineers to safely inspect, execute, or debug suspicious files in an ephemeral, hypervisor-isolated virtual machine:
+- **Dynamic `.wsb` Generation**: Automatically constructs tailored Windows Sandbox XML configuration files in temporary staging directories.
+- **Air-Gapped Isolation (`<Networking>Disable</Networking>`)**: Eliminates the risk of live malware contacting command-and-control (C2) servers or downloading secondary stages during manual inspection.
+- **Read-Only Host Mounting (`<ReadOnly>true</ReadOnly>`)**: Mounts only the dedicated threat staging folder into the sandbox as strictly read-only, preventing ransomware from writing to or encrypting host drives.
+- **Automated Boot Logon Command**: Injects a `<LogonCommand>` running `explorer.exe` targeted at the mapped sandbox directory, immediately revealing the payload to the user upon VM boot.
+- **1-Click UI Detonation**: Integrated **"📦 Detonate in Sandbox"** action buttons for any High, Critical, or Zero-Day threat with built-in prerequisites checking.
+
 ---
 
 ## Heuristic & Structural Anomaly Engine

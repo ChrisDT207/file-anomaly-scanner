@@ -236,3 +236,56 @@ export async function submitFileToVirusTotal(file) {
 
   return await res.json();
 }
+
+const API_SANDBOX = '/api/sandbox';
+
+/**
+ * Checks if Windows Sandbox is available on host machine.
+ * @returns {Promise<{ available: boolean, instructions: string }>}
+ */
+export async function checkSandboxStatus() {
+  try {
+    const res = await fetch(`${API_SANDBOX}/status`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.error('Failed to query sandbox status', err);
+  }
+  return { available: false, instructions: 'Backend unreachable.' };
+}
+
+/**
+ * Launches a file in an isolated Windows Sandbox VM environment.
+ * @param {string|null} filePath Local host file path
+ * @param {File|null} fileBlob In-memory File object if uploaded
+ * @returns {Promise<any>}
+ */
+export async function detonateInSandbox(filePath = null, fileBlob = null) {
+  let res;
+  if (fileBlob) {
+    const formData = new FormData();
+    formData.append('file', fileBlob, fileBlob.name);
+    if (filePath) formData.append('filePath', filePath);
+
+    res = await fetch(`${API_SANDBOX}/detonate`, {
+      method: 'POST',
+      body: formData
+    });
+  } else if (filePath) {
+    res = await fetch(`${API_SANDBOX}/detonate-json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filePath })
+    });
+  } else {
+    throw new Error('No file or path provided for sandbox detonation.');
+  }
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || `Sandbox launch failed (HTTP ${res.status})`);
+  }
+  return data;
+}
+
