@@ -15,6 +15,9 @@ namespace FileAnomalyScanner.Models
         public string ClaimedExtension { get; set; } = string.Empty;
         public string DetectedType { get; set; } = string.Empty;
         public bool IsMagicByteMismatch { get; set; }
+        public string Sha256Hash { get; set; } = string.Empty;
+        public VirusTotalReport? VirusTotalResult { get; set; }
+        public SafeBrowsingMatch? SafeBrowsingMatch { get; set; }
         public DateTime DetectedAt { get; set; } = DateTime.UtcNow;
     }
 }

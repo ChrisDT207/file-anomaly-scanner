@@ -2,7 +2,8 @@
  * API communication service for ASP.NET Core File Anomaly Scanner.
  */
 
-const API_BASE = '/api/upload';
+const API_UPLOAD = '/api/upload';
+const API_SETTINGS = '/api/settings';
 
 /**
  * Checks the health status of the backend API.
@@ -10,7 +11,7 @@ const API_BASE = '/api/upload';
  */
 export async function checkBackendHealth() {
   try {
-    const res = await fetch(`${API_BASE}/health`, { method: 'GET' });
+    const res = await fetch(`${API_UPLOAD}/health`, { method: 'GET' });
     return res.ok;
   } catch (err) {
     return false;
@@ -23,7 +24,7 @@ export async function checkBackendHealth() {
  */
 export async function fetchSignatures() {
   try {
-    const res = await fetch(`${API_BASE}/signatures`);
+    const res = await fetch(`${API_UPLOAD}/signatures`);
     if (res.ok) {
       return await res.json();
     }
@@ -31,6 +32,69 @@ export async function fetchSignatures() {
     console.error('Failed to load backend signatures', e);
   }
   return null;
+}
+
+/**
+ * Fetches current threat intelligence configuration (VirusTotal & Safe Browsing).
+ * @returns {Promise<any>}
+ */
+export async function fetchSecuritySettings() {
+  try {
+    const res = await fetch(API_SETTINGS, { method: 'GET' });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.error('Failed to load security settings', err);
+  }
+  return null;
+}
+
+/**
+ * Updates threat intelligence configuration.
+ * @param {object} payload
+ * @returns {Promise<any>}
+ */
+export async function updateSecuritySettings(payload) {
+  const res = await fetch(API_SETTINGS, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || `Failed to update settings (HTTP ${res.status})`);
+  }
+  return await res.json();
+}
+
+/**
+ * Tests connection to VirusTotal API.
+ * @param {string|null} apiKey
+ * @returns {Promise<any>}
+ */
+export async function testVirusTotalKey(apiKey = null) {
+  const res = await fetch(`${API_SETTINGS}/test-virustotal`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ apiKey: apiKey || null })
+  });
+  return await res.json();
+}
+
+/**
+ * Tests connection to Google Safe Browsing API.
+ * @param {string|null} apiKey
+ * @returns {Promise<any>}
+ */
+export async function testSafeBrowsingKey(apiKey = null) {
+  const res = await fetch(`${API_SETTINGS}/test-safebrowsing`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ apiKey: apiKey || null })
+  });
+  return await res.json();
 }
 
 /**
@@ -45,15 +109,17 @@ export async function uploadAndScanFiles(fileItems, onProgress = null) {
     throw new Error('No files provided for scanning.');
   }
 
-  // Split into batches if needed (e.g. 50 files per batch or 50MB per batch)
   const BATCH_SIZE = 50;
   const totalBatches = Math.ceil(fileItems.length / BATCH_SIZE);
 
   let aggregatedAnomalies = [];
+  let aggregatedFiles = [];
   let aggregatedLogs = [];
   let totalFilesScanned = 0;
   let totalBytesScanned = 0;
   let totalDurationMs = 0;
+  let vtFlaggedCount = 0;
+  let sbThreatCount = 0;
 
   for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
     const start = batchIndex * BATCH_SIZE;
@@ -66,7 +132,7 @@ export async function uploadAndScanFiles(fileItems, onProgress = null) {
         totalBatches,
         processedFiles: start,
         totalFiles: fileItems.length,
-        status: `Uploading batch ${batchIndex + 1}/${totalBatches} (${chunk.length} files)...`
+        status: `Processing batch ${batchIndex + 1}/${totalBatches} (${chunk.length} files)...`
       });
     }
 
@@ -76,7 +142,7 @@ export async function uploadAndScanFiles(fileItems, onProgress = null) {
       formData.append('paths', item.relativePath);
     }
 
-    const response = await fetch(`${API_BASE}/scan`, {
+    const response = await fetch(`${API_UPLOAD}/scan`, {
       method: 'POST',
       body: formData
     });
@@ -98,6 +164,9 @@ export async function uploadAndScanFiles(fileItems, onProgress = null) {
     if (batchReport.anomalies) {
       aggregatedAnomalies.push(...batchReport.anomalies);
     }
+    if (batchReport.files) {
+      aggregatedFiles.push(...batchReport.files);
+    }
     if (batchReport.consoleLogs) {
       aggregatedLogs.push(...batchReport.consoleLogs);
     }
@@ -105,10 +174,12 @@ export async function uploadAndScanFiles(fileItems, onProgress = null) {
       totalFilesScanned += batchReport.summary.totalFilesScanned || chunk.length;
       totalBytesScanned += batchReport.summary.totalBytesScanned || 0;
       totalDurationMs += batchReport.summary.durationMs || 0;
+      vtFlaggedCount += batchReport.summary.virusTotalFlaggedCount || 0;
+      sbThreatCount += batchReport.summary.safeBrowsingThreatCount || 0;
     }
   }
 
-  // Construct final consolidated report
+  // Calculate severity counts
   const criticalCount = aggregatedAnomalies.filter((a) => a.severity === 4).length;
   const highCount = aggregatedAnomalies.filter((a) => a.severity === 3).length;
   const mediumCount = aggregatedAnomalies.filter((a) => a.severity === 2).length;
@@ -126,10 +197,13 @@ export async function uploadAndScanFiles(fileItems, onProgress = null) {
       mediumCount,
       lowCount,
       infoCount,
+      virusTotalFlaggedCount: vtFlaggedCount,
+      safeBrowsingThreatCount: sbThreatCount,
       durationMs: totalDurationMs,
       scanCompletedAt: new Date().toISOString()
     },
     anomalies: aggregatedAnomalies,
+    files: aggregatedFiles,
     consoleLogs: aggregatedLogs
   };
 }

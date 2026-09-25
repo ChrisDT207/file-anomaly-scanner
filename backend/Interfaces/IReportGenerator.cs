@@ -10,6 +10,7 @@ namespace FileAnomalyScanner.Interfaces
             List<string> consoleLogs,
             int totalFiles,
             long totalBytes,
-            double durationMs);
+            double durationMs,
+            List<FileScanMetadata>? files = null);
     }
 }

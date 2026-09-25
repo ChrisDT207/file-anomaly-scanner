@@ -12,6 +12,8 @@ namespace FileAnomalyScanner.Models
         public int MediumCount { get; set; }
         public int LowCount { get; set; }
         public int InfoCount { get; set; }
+        public int VirusTotalFlaggedCount { get; set; }
+        public int SafeBrowsingThreatCount { get; set; }
         public double DurationMs { get; set; }
         public DateTime ScanCompletedAt { get; set; } = DateTime.UtcNow;
     }

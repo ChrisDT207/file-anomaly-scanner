@@ -37,5 +37,14 @@ ehthumbs.db
 Desktop.ini
 .DS_Store
 
+# --- Security & Local Configuration (Never Commit API Keys or Local Settings) ---
+**/security-settings*.json
+security-settings.json
+appsettings.user.json
+appsettings.Development.json
+*.local.json
+*.key
+*.pem
+
 # --- Allow the 1-Click Desktop Launcher Executable in the Root ---
 !/FileAnomalyScanner.exe

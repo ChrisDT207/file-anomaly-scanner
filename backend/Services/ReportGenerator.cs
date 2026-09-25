@@ -13,8 +13,12 @@ namespace FileAnomalyScanner.Services
             List<string> consoleLogs,
             int totalFiles,
             long totalBytes,
-            double durationMs)
+            double durationMs,
+            List<FileScanMetadata>? files = null)
         {
+            var vtFlagged = anomalies.Count(a => a.Category.Contains("VirusTotal", StringComparison.OrdinalIgnoreCase));
+            var sbThreats = anomalies.Count(a => a.Category.Contains("Safe Browsing", StringComparison.OrdinalIgnoreCase));
+
             var summary = new ScanSummaryDto
             {
                 TotalFilesScanned = totalFiles,
@@ -25,6 +29,8 @@ namespace FileAnomalyScanner.Services
                 MediumCount = anomalies.Count(a => a.Severity == AnomalySeverity.Medium),
                 LowCount = anomalies.Count(a => a.Severity == AnomalySeverity.Low),
                 InfoCount = anomalies.Count(a => a.Severity == AnomalySeverity.Info),
+                VirusTotalFlaggedCount = vtFlagged,
+                SafeBrowsingThreatCount = sbThreats,
                 DurationMs = Math.Round(durationMs, 2),
                 ScanCompletedAt = DateTime.UtcNow
             };
@@ -34,9 +40,18 @@ namespace FileAnomalyScanner.Services
             consoleLogs.Add($"[{timestamp}] [REPORT] Total Files: {totalFiles} | Total Data: {FormatBytes(totalBytes)}.");
             consoleLogs.Add($"[{timestamp}] [REPORT] Anomalies Flagged: {anomalies.Count} (Critical: {summary.CriticalCount}, High: {summary.HighCount}, Medium: {summary.MediumCount}, Low: {summary.LowCount}).");
 
+            if (vtFlagged > 0)
+            {
+                consoleLogs.Add($"[{timestamp}] [THREAT INTEL] [ALERT] VirusTotal identified malware detections on {vtFlagged} file(s).");
+            }
+            if (sbThreats > 0)
+            {
+                consoleLogs.Add($"[{timestamp}] [THREAT INTEL] [ALERT] Google Safe Browsing identified {sbThreats} blacklisted URL threat(s).");
+            }
+
             if (anomalies.Count == 0)
             {
-                consoleLogs.Add($"[{timestamp}] [REPORT] STATUS: CLEAN. No structural or heuristic anomalies detected.");
+                consoleLogs.Add($"[{timestamp}] [REPORT] STATUS: CLEAN. No structural, virus, or heuristic anomalies detected.");
             }
             else
             {
@@ -47,6 +62,7 @@ namespace FileAnomalyScanner.Services
             {
                 Summary = summary,
                 Anomalies = anomalies,
+                Files = files ?? new List<FileScanMetadata>(),
                 ConsoleLogs = consoleLogs,
                 Success = true
             };

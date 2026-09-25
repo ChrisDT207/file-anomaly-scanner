@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
+import VendorDetectionsModal from './VendorDetectionsModal';
 
-export default function AnomalyTable({ anomalies, summary }) {
+export default function AnomalyTable({ anomalies, summary, files }) {
+  const [activeTab, setActiveTab] = useState('threats'); // 'threats' | 'allFiles'
   const [severityFilter, setSeverityFilter] = useState('ALL');
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedVtItem, setSelectedVtItem] = useState(null);
+  const [copiedHash, setCopiedHash] = useState(null);
 
   const severityLabels = {
     4: 'CRITICAL',
@@ -12,10 +17,23 @@ export default function AnomalyTable({ anomalies, summary }) {
     0: 'INFO'
   };
 
+  const copyHash = (hash) => {
+    if (!hash) return;
+    navigator.clipboard.writeText(hash);
+    setCopiedHash(hash);
+    setTimeout(() => setCopiedHash(null), 2000);
+  };
+
   const filteredAnomalies = (anomalies || []).filter((item) => {
     if (severityFilter !== 'ALL') {
       const targetSeverity = parseInt(severityFilter, 10);
       if (item.severity !== targetSeverity) return false;
+    }
+
+    if (categoryFilter !== 'ALL') {
+      if (categoryFilter === 'VIRUSTOTAL' && !item.category.includes('VirusTotal')) return false;
+      if (categoryFilter === 'SAFEBROWSING' && !item.category.includes('Safe Browsing')) return false;
+      if (categoryFilter === 'HEURISTIC' && (item.category.includes('VirusTotal') || item.category.includes('Safe Browsing'))) return false;
     }
 
     if (searchTerm.trim() !== '') {
@@ -24,29 +42,155 @@ export default function AnomalyTable({ anomalies, summary }) {
       const inCat = (item.category || '').toLowerCase().includes(term);
       const inDetails = (item.details || '').toLowerCase().includes(term);
       const inTitle = (item.title || '').toLowerCase().includes(term);
-      if (!inPath && !inCat && !inDetails && !inTitle) return false;
+      const inHash = (item.sha256Hash || '').toLowerCase().includes(term);
+      if (!inPath && !inCat && !inDetails && !inTitle && !inHash) return false;
     }
 
     return true;
   });
 
+  const filteredFiles = (files || []).filter((file) => {
+    if (searchTerm.trim() !== '') {
+      const term = searchTerm.toLowerCase();
+      const inPath = (file.filePath || '').toLowerCase().includes(term);
+      const inName = (file.fileName || '').toLowerCase().includes(term);
+      const inHash = (file.sha256 || '').toLowerCase().includes(term);
+      const inStatus = (file.status || '').toLowerCase().includes(term);
+      if (!inPath && !inName && !inHash && !inStatus) return false;
+    }
+    return true;
+  });
+
   const exportReportJson = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify({ summary, anomalies }, null, 2));
+    const dataStr =
+      'data:text/json;charset=utf-8,' +
+      encodeURIComponent(JSON.stringify({ summary, anomalies, files }, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `AnomalyReport_${Date.now()}.json`);
+    downloadAnchor.setAttribute('download', `SecurityThreatReport_${Date.now()}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
   };
 
+  const renderVtBadge = (item) => {
+    const vt = item.virusTotalResult || item.virusTotal;
+    const sha = item.sha256Hash || item.sha256 || (vt && vt.sha256);
+    const vtUrl = vt?.permalink || (sha ? `https://www.virustotal.com/gui/file/${sha}` : null);
+
+    if (vt && (vt.maliciousCount > 0 || vt.suspiciousCount > 0)) {
+      return (
+        <button
+          type="button"
+          className="badge-threat-btn vt-malicious-badge"
+          onClick={() => setSelectedVtItem(item)}
+          title="Click to view detailed Antivirus engine detections"
+        >
+          🦠 {vt.maliciousCount}/{vt.totalEngines} AV MALICIOUS
+        </button>
+      );
+    }
+
+    if (vt && vt.status === 'Clean') {
+      return (
+        <span className="badge-pass" title={`Clean across ${vt.totalEngines} engines`}>
+          ✓ 0/{vt.totalEngines} CLEAN
+        </span>
+      );
+    }
+
+    if (vt && vt.status === 'NotFound') {
+      return (
+        <a
+          href={vtUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="badge-link badge-unknown"
+          title="Hash not found in VirusTotal database. Click to view or submit."
+        >
+          ○ UNKNOWN (VT) ↗
+        </a>
+      );
+    }
+
+    if (vt && vt.status === 'RateLimited') {
+      return (
+        <a
+          href={vtUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="badge-link badge-ratelimit"
+          title="Rate limited. Click for manual lookup on VirusTotal."
+        >
+          ⏱ VT RATE LIMIT ↗
+        </a>
+      );
+    }
+
+    if (sha) {
+      return (
+        <a
+          href={vtUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="badge-link badge-vt-ready"
+          title="Click to lookup hash on VirusTotal"
+        >
+          🔍 VT HASH LOOKUP ↗
+        </a>
+      );
+    }
+
+    return <span className="badge-disabled">—</span>;
+  };
+
+  const renderSafeBrowsingBadge = (item) => {
+    const sbMatch = item.safeBrowsingMatch;
+    const sbReport = item.safeBrowsing;
+
+    if (sbMatch || (sbReport && sbReport.hasThreats)) {
+      const threatType = sbMatch ? sbMatch.threatType : sbReport.matches[0]?.threatType || 'MALWARE';
+      return (
+        <span className="badge-flag" title={`Google Safe Browsing Threat: ${threatType}`}>
+          🚫 SAFE BROWSING: {threatType}
+        </span>
+      );
+    }
+
+    if (sbReport && sbReport.urlsChecked && sbReport.urlsChecked.length > 0) {
+      return (
+        <span className="badge-pass" title="All embedded URLs verified safe by Google">
+          ✓ {sbReport.urlsChecked.length} URL(s) Clean
+        </span>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="section-card anomaly-section">
       <div className="anomaly-header">
-        <div className="section-title">Anomaly Results &amp; Structural Findings</div>
-        {anomalies && anomalies.length > 0 && (
+        <div className="table-tabs">
+          <button
+            type="button"
+            className={`tab-btn ${activeTab === 'threats' ? 'active' : ''}`}
+            onClick={() => setActiveTab('threats')}
+          >
+            Threats &amp; Anomalies ({anomalies ? anomalies.length : 0})
+          </button>
+          <button
+            type="button"
+            className={`tab-btn ${activeTab === 'allFiles' ? 'active' : ''}`}
+            onClick={() => setActiveTab('allFiles')}
+          >
+            All Scanned Files &amp; Hashes ({files ? files.length : 0})
+          </button>
+        </div>
+
+        {summary && (anomalies?.length > 0 || files?.length > 0) && (
           <button type="button" className="btn btn-sm" onClick={exportReportJson}>
-            Export JSON Report
+            Export Security Report (JSON)
           </button>
         )}
       </div>
@@ -59,7 +203,7 @@ export default function AnomalyTable({ anomalies, summary }) {
             <span className="summary-val">{summary.totalFilesScanned}</span>
           </div>
           <div className="summary-item">
-            <span className="summary-label">Anomalies:</span>
+            <span className="summary-label">Total Findings:</span>
             <span className="summary-val font-bold">{summary.totalAnomaliesFound}</span>
           </div>
           <div className="summary-item">
@@ -71,12 +215,16 @@ export default function AnomalyTable({ anomalies, summary }) {
             <span className="summary-val val-high">{summary.highCount || 0}</span>
           </div>
           <div className="summary-item">
-            <span className="summary-label">Medium:</span>
-            <span className="summary-val val-medium">{summary.mediumCount || 0}</span>
+            <span className="summary-label">VirusTotal Detections:</span>
+            <span className={`summary-val ${summary.virusTotalFlaggedCount > 0 ? 'val-critical font-bold' : ''}`}>
+              {summary.virusTotalFlaggedCount || 0}
+            </span>
           </div>
           <div className="summary-item">
-            <span className="summary-label">Low:</span>
-            <span className="summary-val">{summary.lowCount || 0}</span>
+            <span className="summary-label">Safe Browsing Threats:</span>
+            <span className={`summary-val ${summary.safeBrowsingThreatCount > 0 ? 'val-critical font-bold' : ''}`}>
+              {summary.safeBrowsingThreatCount || 0}
+            </span>
           </div>
           <div className="summary-item">
             <span className="summary-label">Duration:</span>
@@ -85,101 +233,266 @@ export default function AnomalyTable({ anomalies, summary }) {
         </div>
       )}
 
-      {/* Table Filters */}
+      {/* Table Controls */}
       <div className="table-controls">
-        <div className="filter-group">
-          <label htmlFor="severitySelect">Filter Severity:</label>
-          <select
-            id="severitySelect"
-            value={severityFilter}
-            onChange={(e) => setSeverityFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="ALL">All Severities</option>
-            <option value="4">Critical</option>
-            <option value="3">High</option>
-            <option value="2">Medium</option>
-            <option value="1">Low</option>
-            <option value="0">Info</option>
-          </select>
-        </div>
+        {activeTab === 'threats' && (
+          <>
+            <div className="filter-group">
+              <label htmlFor="severitySelect">Severity:</label>
+              <select
+                id="severitySelect"
+                value={severityFilter}
+                onChange={(e) => setSeverityFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="ALL">All Severities</option>
+                <option value="4">Critical</option>
+                <option value="3">High</option>
+                <option value="2">Medium</option>
+                <option value="1">Low</option>
+                <option value="0">Info</option>
+              </select>
+            </div>
 
-        <div className="filter-group">
+            <div className="filter-group">
+              <label htmlFor="categorySelect">Threat Type:</label>
+              <select
+                id="categorySelect"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="ALL">All Types</option>
+                <option value="VIRUSTOTAL">VirusTotal Antivirus Flagged</option>
+                <option value="SAFEBROWSING">Google Safe Browsing Threats</option>
+                <option value="HEURISTIC">Heuristic &amp; Structural Anomalies</option>
+              </select>
+            </div>
+          </>
+        )}
+
+        <div className="filter-group filter-grow">
           <label htmlFor="searchInput">Search:</label>
           <input
             id="searchInput"
             type="text"
             className="search-input"
-            placeholder="Search by filename, path, or rule..."
+            placeholder="Search by filename, path, SHA-256 hash, or rule..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
         <div className="filter-count">
-          Showing {filteredAnomalies.length} of {anomalies ? anomalies.length : 0} items
+          {activeTab === 'threats'
+            ? `Showing ${filteredAnomalies.length} of ${anomalies ? anomalies.length : 0} findings`
+            : `Showing ${filteredFiles.length} of ${files ? files.length : 0} files`}
         </div>
       </div>
 
-      {/* Results Table */}
-      <div className="table-container">
-        <table className="anomaly-table">
-          <thead>
-            <tr>
-              <th style={{ width: '90px' }}>Severity</th>
-              <th style={{ width: '220px' }}>File Path</th>
-              <th style={{ width: '160px' }}>Category</th>
-              <th style={{ width: '80px' }}>Entropy</th>
-              <th style={{ width: '140px' }}>Magic Mismatch</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {!anomalies || anomalies.length === 0 ? (
+      {/* View: Threats & Anomalies Table */}
+      {activeTab === 'threats' && (
+        <div className="table-container">
+          <table className="anomaly-table">
+            <thead>
               <tr>
-                <td colSpan="6" className="table-empty">
-                  No scan performed yet, or all scanned files passed without anomalies.
-                </td>
+                <th style={{ width: '90px' }}>Severity</th>
+                <th style={{ width: '220px' }}>File Path</th>
+                <th style={{ width: '160px' }}>Category</th>
+                <th style={{ width: '170px' }}>Threat Intel / AV</th>
+                <th style={{ width: '140px' }}>SHA-256 Hash</th>
+                <th>Details &amp; Findings</th>
               </tr>
-            ) : filteredAnomalies.length === 0 ? (
+            </thead>
+            <tbody>
+              {!anomalies || anomalies.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="table-empty">
+                    No scan performed yet, or all scanned files passed without threats or anomalies.
+                  </td>
+                </tr>
+              ) : filteredAnomalies.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="table-empty">
+                    No anomalies match the current filter criteria.
+                  </td>
+                </tr>
+              ) : (
+                filteredAnomalies.map((item, index) => {
+                  const sevName = severityLabels[item.severity] || 'INFO';
+                  const sha = item.sha256Hash || '';
+                  const shortSha = sha.length > 14 ? `${sha.slice(0, 10)}...` : sha;
+                  return (
+                    <tr key={index} className={`row-sev-${item.severity}`}>
+                      <td>
+                        <span className={`badge badge-sev-${item.severity}`}>{sevName}</span>
+                      </td>
+                      <td className="cell-filepath" title={item.filePath}>
+                        <div className="font-bold">{item.fileName}</div>
+                        <div className="item-sub-path">{item.filePath}</div>
+                      </td>
+                      <td>
+                        <strong>{item.category}</strong>
+                        <div className="item-sub-title">{item.title}</div>
+                      </td>
+                      <td className="cell-threat-intel">
+                        {renderVtBadge(item)}
+                        {renderSafeBrowsingBadge(item)}
+                      </td>
+                      <td className="cell-hash font-mono">
+                        {sha ? (
+                          <div className="hash-wrap">
+                            <span title={sha}>{shortSha}</span>
+                            <button
+                              type="button"
+                              className="btn-tiny"
+                              onClick={() => copyHash(sha)}
+                              title="Copy full SHA-256"
+                            >
+                              {copiedHash === sha ? '✓' : '📋'}
+                            </button>
+                            <a
+                              href={`https://www.virustotal.com/gui/file/${sha}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="link-icon"
+                              title="Search on VirusTotal ↗"
+                            >
+                              ↗
+                            </a>
+                          </div>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="cell-details">
+                        {item.details}
+                        {item.entropy ? (
+                          <div className="detail-meta">Entropy: {item.entropy.toFixed(2)}/8.0</div>
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* View: All Scanned Files & Hashes Table */}
+      {activeTab === 'allFiles' && (
+        <div className="table-container">
+          <table className="anomaly-table">
+            <thead>
               <tr>
-                <td colSpan="6" className="table-empty">
-                  No anomalies match the current filter criteria.
-                </td>
+                <th style={{ width: '110px' }}>Verdict</th>
+                <th style={{ width: '220px' }}>File Path</th>
+                <th style={{ width: '80px' }}>Size</th>
+                <th style={{ width: '160px' }}>SHA-256 Hash</th>
+                <th style={{ width: '70px' }}>Entropy</th>
+                <th style={{ width: '120px' }}>Type</th>
+                <th style={{ width: '160px' }}>VirusTotal AV</th>
+                <th>Safe Browsing</th>
               </tr>
-            ) : (
-              filteredAnomalies.map((item, index) => {
-                const sevName = severityLabels[item.severity] || 'INFO';
-                return (
-                  <tr key={index} className={`row-sev-${item.severity}`}>
-                    <td>
-                      <span className={`badge badge-sev-${item.severity}`}>{sevName}</span>
-                    </td>
-                    <td className="cell-filepath" title={item.filePath}>
-                      {item.filePath}
-                    </td>
-                    <td>
-                      <strong>{item.category}</strong>
-                      <div className="item-sub-title">{item.title}</div>
-                    </td>
-                    <td className="cell-entropy">
-                      {item.entropy ? `${item.entropy.toFixed(2)} / 8.0` : '—'}
-                    </td>
-                    <td>
-                      {item.isMagicByteMismatch ? (
-                        <span className="badge-flag">MISMATCH</span>
-                      ) : (
-                        <span className="badge-pass">Matched / N/A</span>
-                      )}
-                    </td>
-                    <td className="cell-details">{item.details}</td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {!files || files.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="table-empty">
+                    No files scanned yet. Select or drop a folder to begin.
+                  </td>
+                </tr>
+              ) : filteredFiles.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="table-empty">
+                    No files match the search criteria.
+                  </td>
+                </tr>
+              ) : (
+                filteredFiles.map((file, index) => {
+                  const sha = file.sha256 || '';
+                  const shortSha = sha.length > 14 ? `${sha.slice(0, 10)}...` : sha;
+                  const isMalicious = file.status.includes('Malicious');
+                  const isClean = file.status === 'Clean';
+
+                  return (
+                    <tr key={index} className={isMalicious ? 'row-sev-4' : ''}>
+                      <td>
+                        <span
+                          className={`badge ${
+                            isMalicious
+                              ? 'badge-sev-4'
+                              : file.status.includes('High')
+                              ? 'badge-sev-3'
+                              : file.status.includes('Suspicious')
+                              ? 'badge-sev-2'
+                              : file.anomalyCount > 0
+                              ? 'badge-sev-1'
+                              : 'badge-sev-0'
+                          }`}
+                        >
+                          {file.status}
+                        </span>
+                      </td>
+                      <td className="cell-filepath" title={file.filePath}>
+                        <div className="font-bold">{file.fileName}</div>
+                        <div className="item-sub-path">{file.filePath}</div>
+                      </td>
+                      <td>{formatFileSize(file.sizeBytes)}</td>
+                      <td className="cell-hash font-mono">
+                        {sha ? (
+                          <div className="hash-wrap">
+                            <span title={sha}>{shortSha}</span>
+                            <button
+                              type="button"
+                              className="btn-tiny"
+                              onClick={() => copyHash(sha)}
+                              title="Copy SHA-256"
+                            >
+                              {copiedHash === sha ? '✓' : '📋'}
+                            </button>
+                            <a
+                              href={`https://www.virustotal.com/gui/file/${sha}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="link-icon"
+                              title="Lookup on VirusTotal ↗"
+                            >
+                              ↗
+                            </a>
+                          </div>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="cell-entropy">{file.entropy ? `${file.entropy.toFixed(2)}` : '—'}</td>
+                      <td>{file.detectedType || '—'}</td>
+                      <td>{renderVtBadge(file)}</td>
+                      <td>{renderSafeBrowsingBadge(file) || <span className="badge-pass">Clean</span>}</td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Vendor Detections Breakdown Modal */}
+      {selectedVtItem && (
+        <VendorDetectionsModal
+          item={selectedVtItem}
+          onClose={() => setSelectedVtItem(null)}
+        />
+      )}
     </div>
   );
+}
+
+function formatFileSize(bytes) {
+  if (bytes === undefined || bytes === null) return '—';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
