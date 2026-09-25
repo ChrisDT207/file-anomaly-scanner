@@ -18,10 +18,14 @@ namespace FileAnomalyScanner.Controllers
     public class SandboxController : ControllerBase
     {
         private readonly ISandboxDetonationService _sandboxService;
+        private readonly ISandboxInstallerService _installerService;
 
-        public SandboxController(ISandboxDetonationService sandboxService)
+        public SandboxController(
+            ISandboxDetonationService sandboxService,
+            ISandboxInstallerService installerService)
         {
             _sandboxService = sandboxService;
+            _installerService = installerService;
         }
 
         [HttpGet("status")]
@@ -108,6 +112,39 @@ namespace FileAnomalyScanner.Controllers
                 success = true,
                 message = result.Message,
                 wsbConfig = result.WsbConfigPath
+            });
+        }
+
+        [HttpPost("force-install")]
+        public async Task<IActionResult> ForceInstall(CancellationToken cancellationToken = default)
+        {
+            var result = await _installerService.ForceInstallSandboxPackagesAsync(cancellationToken);
+            if (result.CancelledByUser)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    cancelled = true,
+                    message = result.Message
+                });
+            }
+
+            if (!result.Success)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    exitCode = result.ExitCode,
+                    message = result.Message
+                });
+            }
+
+            return Ok(new
+            {
+                success = true,
+                exitCode = result.ExitCode,
+                rebootRequired = result.RebootRequired,
+                message = result.Message
             });
         }
     }

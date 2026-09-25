@@ -54,6 +54,7 @@ Allows security engineers to safely inspect, execute, or debug suspicious files 
 - **Read-Only Host Mounting (`<ReadOnly>true</ReadOnly>`)**: Mounts only the dedicated threat staging folder into the sandbox as strictly read-only, preventing ransomware from writing to or encrypting host drives.
 - **Automated Boot Logon Command**: Injects a `<LogonCommand>` running `explorer.exe` targeted at the mapped sandbox directory, immediately revealing the payload to the user upon VM boot.
 - **1-Click UI Detonation**: Integrated **"📦 Detonate in Sandbox"** action buttons for any High, Critical, or Zero-Day threat with built-in prerequisites checking.
+- **Windows Home Automated Enabler**: Directly unpacks and installs hidden `Containers-DisposableClientVM` servicing packages via elevated DISM script (`ProcessStartInfo.Verb = "runas"`), enabling seamless detonation even on Windows Home editions.
 
 ---
 

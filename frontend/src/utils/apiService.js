@@ -289,3 +289,21 @@ export async function detonateInSandbox(filePath = null, fileBlob = null) {
   return data;
 }
 
+/**
+ * Triggers automated DISM package staging with UAC elevation
+ * to enable Windows Sandbox on Windows Home or unconfigured systems.
+ * @returns {Promise<{ success: boolean, rebootRequired: boolean, message: string }>}
+ */
+export async function forceInstallSandbox() {
+  const res = await fetch(`${API_SANDBOX}/force-install`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || `Sandbox installation failed (HTTP ${res.status})`);
+  }
+  return data;
+}
+

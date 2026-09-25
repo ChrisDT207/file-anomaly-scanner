@@ -1473,3 +1473,258 @@ body {
   border-radius: 3px;
 }
 
+/* Windows Home Sandbox Installer & Reboot UI */
+.sandbox-home-installer-box {
+  background: linear-gradient(135deg, #f8f9fa 0%, #edf2ff 100%);
+  border: 1px solid #bac8ff;
+  border-left: 4px solid #4c6ef5;
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin-top: 14px;
+}
+
+.installer-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.installer-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background-color: #3b5bdb;
+  color: #ffffff;
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+
+.installer-header h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1c7ed6;
+}
+
+.installer-desc {
+  font-size: 12px;
+  color: #495057;
+  margin: 0 0 12px 0;
+  line-height: 1.45;
+}
+
+.installer-action-row {
+  margin-bottom: 10px;
+}
+
+.btn-force-install {
+  background: linear-gradient(135deg, #4c6ef5 0%, #364fc7 100%);
+  color: #ffffff;
+  border: none;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(76, 110, 245, 0.35);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-force-install:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3b5bdb 0%, #2b3a8c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(76, 110, 245, 0.45);
+}
+
+.btn-force-install:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.install-uac-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background-color: #fff9db;
+  border: 1px solid #ffe066;
+  border-radius: 4px;
+  padding: 9px 12px;
+  font-size: 11px;
+  color: #7950f2;
+  line-height: 1.45;
+}
+
+.install-uac-warning.installing-pulse {
+  background-color: #e7f5ff;
+  border-color: #a5d8ff;
+  color: #1864ab;
+  animation: pulseBox 2s infinite ease-in-out;
+}
+
+@keyframes pulseBox {
+  0% { opacity: 0.95; }
+  50% { opacity: 0.75; }
+  100% { opacity: 0.95; }
+}
+
+.install-uac-warning .warning-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.install-uac-warning strong {
+  color: #d9480f;
+}
+
+.install-uac-warning.installing-pulse strong {
+  color: #1971c2;
+}
+
+.sandbox-manual-details {
+  margin-top: 14px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+}
+
+.manual-summary {
+  font-size: 12px;
+  font-weight: 600;
+  color: #495057;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  background-color: #e9ecef;
+}
+
+.manual-summary:hover {
+  background-color: #dee2e6;
+}
+
+.sandbox-manual-details .sandbox-troubleshoot-panel {
+  margin-top: 0;
+  border: none;
+  border-radius: 0;
+}
+
+/* Installing In-Progress State */
+.sandbox-installing-panel {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.installing-spinner-wrap {
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+
+.spinner-ring {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #d0ebff;
+  border-top-color: #228be6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.installing-text-wrap h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1971c2;
+}
+
+.installing-text-wrap p {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  color: #495057;
+}
+
+/* Post-Install Reboot Required Panel */
+.sandbox-reboot-panel {
+  background: linear-gradient(135deg, #ebfbee 0%, #e6fcf5 100%);
+  border: 1px solid #63e6be;
+  border-left: 5px solid #20c997;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 10px;
+}
+
+.reboot-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.reboot-badge-icon {
+  font-size: 24px;
+}
+
+.reboot-title-wrap h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #087f5b;
+}
+
+.reboot-subtitle {
+  font-size: 11px;
+  color: #2b8a3e;
+  font-weight: 600;
+}
+
+.reboot-desc {
+  font-size: 12px;
+  color: #212529;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.reboot-instruction-box {
+  background-color: rgba(255, 255, 255, 0.85);
+  border: 1px solid #b2f2bb;
+  border-radius: 4px;
+  padding: 10px 14px;
+}
+
+.instruction-heading {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2b8a3e;
+  margin-bottom: 6px;
+}
+
+.reboot-steps {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #343a40;
+  line-height: 1.6;
+}
+
+.reboot-steps li {
+  margin-bottom: 4px;
+}
+
+.install-err-box {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
