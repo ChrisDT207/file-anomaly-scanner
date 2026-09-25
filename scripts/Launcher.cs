@@ -35,12 +35,18 @@ namespace FileAnomalyScannerLauncher
                 };
 
                 string targetExe = null;
+                DateTime newestTime = DateTime.MinValue;
+
                 foreach (string candidate in candidatePaths)
                 {
                     if (File.Exists(candidate))
                     {
-                        targetExe = candidate;
-                        break;
+                        DateTime writeTime = File.GetLastWriteTimeUtc(candidate);
+                        if (writeTime > newestTime)
+                        {
+                            newestTime = writeTime;
+                            targetExe = candidate;
+                        }
                     }
                 }
 

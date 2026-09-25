@@ -44,6 +44,9 @@ namespace FileAnomalyScanner
             {
                 await ScannerWebView.EnsureCoreWebView2Async();
 
+                // Prevent stale WebView2 disk caching across application updates
+                await ScannerWebView.CoreWebView2.Profile.ClearBrowsingDataAsync();
+
                 ScannerWebView.Source = new Uri(DesktopHost.BaseUrl);
             }
             catch (Exception ex)
