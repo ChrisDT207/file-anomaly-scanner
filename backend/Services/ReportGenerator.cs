@@ -18,6 +18,7 @@ namespace FileAnomalyScanner.Services
         {
             var vtFlagged = anomalies.Count(a => a.Category.Contains("VirusTotal", StringComparison.OrdinalIgnoreCase));
             var sbThreats = anomalies.Count(a => a.Category.Contains("Safe Browsing", StringComparison.OrdinalIgnoreCase));
+            var zeroDayCount = files?.Count(f => f.IsNovelZeroDaySuspicion) ?? 0;
 
             var summary = new ScanSummaryDto
             {
@@ -31,6 +32,7 @@ namespace FileAnomalyScanner.Services
                 InfoCount = anomalies.Count(a => a.Severity == AnomalySeverity.Info),
                 VirusTotalFlaggedCount = vtFlagged,
                 SafeBrowsingThreatCount = sbThreats,
+                NovelZeroDayThreatCount = zeroDayCount,
                 DurationMs = Math.Round(durationMs, 2),
                 ScanCompletedAt = DateTime.UtcNow
             };
@@ -47,6 +49,10 @@ namespace FileAnomalyScanner.Services
             if (sbThreats > 0)
             {
                 consoleLogs.Add($"[{timestamp}] [THREAT INTEL] [ALERT] Google Safe Browsing identified {sbThreats} blacklisted URL threat(s).");
+            }
+            if (zeroDayCount > 0)
+            {
+                consoleLogs.Add($"[{timestamp}] [THREAT INTEL] [WARN] Identified {zeroDayCount} unseen zero-day candidate(s) with high local anomaly scores.");
             }
 
             if (anomalies.Count == 0)

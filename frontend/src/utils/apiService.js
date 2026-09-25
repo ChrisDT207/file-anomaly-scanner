@@ -207,3 +207,32 @@ export async function uploadAndScanFiles(fileItems, onProgress = null) {
     consoleLogs: aggregatedLogs
   };
 }
+
+/**
+ * Submits a physical binary file to VirusTotal API for multi-engine cloud analysis.
+ * @param {File} file
+ * @returns {Promise<any>}
+ */
+export async function submitFileToVirusTotal(file) {
+  const formData = new FormData();
+  formData.append('file', file, file.name);
+
+  const res = await fetch(`${API_UPLOAD}/submit-virustotal`, {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    let msg = `Submission failed (HTTP ${res.status})`;
+    try {
+      const parsed = JSON.parse(errText);
+      if (parsed.message) msg = parsed.message;
+    } catch {
+      if (errText) msg = errText;
+    }
+    throw new Error(msg);
+  }
+
+  return await res.json();
+}

@@ -17,6 +17,8 @@ namespace FileAnomalyScanner.Services
         private readonly IEntropyCalculator _entropyCalculator;
         private readonly IArchiveExtractorService _archiveExtractor;
         private readonly ISuspiciousSignatureManager _signatureManager;
+        private readonly IStreamingFileInspector _streamingInspector;
+        private readonly IPowerShellAstScanner _powerShellAstScanner;
         private readonly IReportGenerator _reportGenerator;
         private readonly IVirusTotalService _virusTotalService;
         private readonly ISafeBrowsingService _safeBrowsingService;
@@ -27,6 +29,8 @@ namespace FileAnomalyScanner.Services
             IEntropyCalculator entropyCalculator,
             IArchiveExtractorService archiveExtractor,
             ISuspiciousSignatureManager signatureManager,
+            IStreamingFileInspector streamingInspector,
+            IPowerShellAstScanner powerShellAstScanner,
             IReportGenerator reportGenerator,
             IVirusTotalService virusTotalService,
             ISafeBrowsingService safeBrowsingService,
@@ -36,6 +40,8 @@ namespace FileAnomalyScanner.Services
             _entropyCalculator = entropyCalculator;
             _archiveExtractor = archiveExtractor;
             _signatureManager = signatureManager;
+            _streamingInspector = streamingInspector;
+            _powerShellAstScanner = powerShellAstScanner;
             _reportGenerator = reportGenerator;
             _virusTotalService = virusTotalService;
             _safeBrowsingService = safeBrowsingService;
@@ -86,22 +92,27 @@ namespace FileAnomalyScanner.Services
 
                 var displayPath = string.IsNullOrWhiteSpace(item.RelativePath) ? item.FileName : item.RelativePath;
                 var ext = Path.GetExtension(item.FileName).ToLowerInvariant();
-                string sha256 = HashUtils.ComputeSha256(item.Content);
-
-                Log(consoleLogs, "INSPECT", $"Ingesting [{totalFiles}]: {displayPath} ({item.SizeBytes} bytes | SHA256: {sha256[..12]}...)...");
 
                 double entropy = 0.0;
+                double peakBlockEntropy = 0.0;
                 string detectedType = "Unknown";
                 var fileAnomalies = new List<FileAnomalyRecord>();
                 VirusTotalReport? vtReport = null;
                 SafeBrowsingReport? sbReport = null;
+                string sha256 = string.Empty;
 
                 try
                 {
-                    // 1. Calculate and assess Entropy
-                    entropy = _entropyCalculator.CalculateEntropy(item.Content);
-                    var (isEntropyAnomalous, entropySeverity, entropyDesc) = _entropyCalculator.AssessEntropy(item.FileName, entropy);
+                    // 1. High-Performance Zero-OOM Streaming Inspection (ArrayPool, IncrementalHash, Histogram Entropy)
+                    var streamingResult = await _streamingInspector.InspectBytesAsync(item.Content, cancellationToken);
+                    sha256 = streamingResult.Sha256;
+                    entropy = streamingResult.OverallEntropy;
+                    peakBlockEntropy = streamingResult.PeakBlockEntropy;
 
+                    Log(consoleLogs, "INSPECT", $"Ingesting [{totalFiles}]: {displayPath} ({item.SizeBytes} bytes | SHA256: {sha256[..12]}... | Entropy: {entropy:F2}/8.00 | Peak: {peakBlockEntropy:F2})...");
+
+                    // Assess overall entropy
+                    var (isEntropyAnomalous, entropySeverity, entropyDesc) = _entropyCalculator.AssessEntropy(item.FileName, entropy);
                     if (isEntropyAnomalous)
                     {
                         Log(consoleLogs, "WARN", $"Entropy flag on '{displayPath}': {entropy:F2}/8.00 - {entropyDesc}");
@@ -120,8 +131,27 @@ namespace FileAnomalyScanner.Services
                         });
                     }
 
-                    // 2. Validate Magic Bytes vs File Extension
-                    var (isMagicMatch, magicType, magicDetails) = _magicByteValidator.Validate(item.FileName, item.Content);
+                    // Sliding window packed/encrypted section alert
+                    if (streamingResult.HasSuspiciousHighEntropySection && !ext.Equals(".zip", StringComparison.OrdinalIgnoreCase) && !ext.Equals(".gz", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log(consoleLogs, "WARN", $"Sliding window entropy alert on '{displayPath}': Peak {peakBlockEntropy:F2}/8.00 in 64KB chunk buffer.");
+                        fileAnomalies.Add(new FileAnomalyRecord
+                        {
+                            FilePath = displayPath,
+                            FileName = item.FileName,
+                            FileSizeBytes = item.SizeBytes,
+                            Category = "Sliding Window Entropy Anomaly",
+                            Title = "Packed / Encrypted Section Detected",
+                            Details = $"Detected concentrated high-entropy block (Peak: {peakBlockEntropy:F2}/8.00) in 64KB buffer window. Common indicator of packed crypters or encrypted binary overlays.",
+                            Severity = AnomalySeverity.High,
+                            Entropy = entropy,
+                            ClaimedExtension = ext,
+                            Sha256Hash = sha256
+                        });
+                    }
+
+                    // 2. Validate Magic Bytes vs File Extension (using captured header buffer)
+                    var (isMagicMatch, magicType, magicDetails) = _magicByteValidator.Validate(item.FileName, streamingResult.HeaderBytes);
                     detectedType = magicType;
 
                     if (!isMagicMatch)
@@ -149,7 +179,7 @@ namespace FileAnomalyScanner.Services
                         });
                     }
 
-                    // 3. Scan for Suspicious Heuristic Signatures
+                    // 3. Scan for Suspicious Heuristic Signatures (RTLO, double extension, polyglot stubs, webshells)
                     var signatureAnomalies = _signatureManager.ScanForSignatures(displayPath, item.FileName, item.Content, entropy);
                     foreach (var sigAnomaly in signatureAnomalies)
                     {
@@ -158,7 +188,25 @@ namespace FileAnomalyScanner.Services
                         fileAnomalies.Add(sigAnomaly);
                     }
 
-                    // 4. Container / Archive Inspection
+                    // 4. Abstract Syntax Tree (AST) PowerShell Obfuscation Inspection
+                    if (_powerShellAstScanner.IsPowerShellTarget(item.FileName, streamingResult.TextSnippet))
+                    {
+                        string scriptContent = !string.IsNullOrEmpty(streamingResult.TextSnippet) 
+                            ? streamingResult.TextSnippet 
+                            : System.Text.Encoding.UTF8.GetString(item.Content, 0, Math.Min(item.Content.Length, 128 * 1024));
+
+                        var astAnomalies = _powerShellAstScanner.AnalyzeScript(displayPath, item.FileName, scriptContent);
+                        foreach (var astAnomaly in astAnomalies)
+                        {
+                            astAnomaly.Sha256Hash = sha256;
+                            astAnomaly.Entropy = entropy;
+                            astAnomaly.ClaimedExtension = ext;
+                            Log(consoleLogs, "AST", $"[AST-SECURITY] {astAnomaly.Title} on '{displayPath}'");
+                            fileAnomalies.Add(astAnomaly);
+                        }
+                    }
+
+                    // 5. Container / Archive Inspection
                     if (_archiveExtractor.IsSupportedArchive(item.FileName, item.Content))
                     {
                         Log(consoleLogs, "ARCHIVE", $"Deep inspecting archive container: {displayPath}");
@@ -171,7 +219,7 @@ namespace FileAnomalyScanner.Services
                         }
                     }
 
-                    // 5. Threat Intelligence: VirusTotal Antivirus Scan
+                    // 6. Threat Intelligence: VirusTotal Antivirus Scan
                     bool isSuspiciousExt = ext is ".exe" or ".dll" or ".scr" or ".ps1" or ".bat" or ".vbs" or ".cmd" or ".jar";
                     bool shouldQueryVt = vtActive && (
                         fileAnomalies.Count > 0 ||
@@ -235,7 +283,7 @@ namespace FileAnomalyScanner.Services
                         };
                     }
 
-                    // 6. Threat Intelligence: Google Safe Browsing URL Scan
+                    // 7. Threat Intelligence: Google Safe Browsing URL Scan
                     if (sbActive && settings.CheckEmbeddedUrlsWithSafeBrowsing)
                     {
                         var extractedUrls = _safeBrowsingService.ExtractUrlsFromContent(item.Content);
@@ -272,11 +320,34 @@ namespace FileAnomalyScanner.Services
                         }
                     }
 
+                    // 8. Challenge 2: Composite Local Risk Score & Zero-Day Threat Arbiter
+                    int localRiskScore = 0;
+                    if (fileAnomalies.Any(a => a.IsMagicByteMismatch)) localRiskScore += 40;
+                    if (fileAnomalies.Any(a => a.Category.Contains("RTLO", StringComparison.OrdinalIgnoreCase) || a.Category.Contains("Double Extension", StringComparison.OrdinalIgnoreCase))) localRiskScore += 35;
+                    if (fileAnomalies.Any(a => a.Category.Contains("AST", StringComparison.OrdinalIgnoreCase))) localRiskScore += 35;
+                    if (fileAnomalies.Any(a => a.Category.Contains("Webshell", StringComparison.OrdinalIgnoreCase) || a.Category.Contains("Polyglot", StringComparison.OrdinalIgnoreCase))) localRiskScore += 35;
+                    if (fileAnomalies.Any(a => a.Category.Contains("Entropy", StringComparison.OrdinalIgnoreCase))) localRiskScore += 25;
+                    if (fileAnomalies.Any(a => a.Category.Contains("Archive", StringComparison.OrdinalIgnoreCase))) localRiskScore += 30;
+                    if (fileAnomalies.Any(a => a.Category.Contains("Safe Browsing", StringComparison.OrdinalIgnoreCase))) localRiskScore += 50;
+                    localRiskScore = Math.Min(100, localRiskScore);
+
+                    bool isZeroDaySuspicion = false;
+                    if (vtReport?.Status == "NotFound" && (localRiskScore >= 35 || fileAnomalies.Any(a => a.Severity == AnomalySeverity.Critical)))
+                    {
+                        isZeroDaySuspicion = true;
+                        Log(consoleLogs, "ZERO-DAY", $"[ALERT] '{displayPath}' is not listed on VirusTotal (NotFound) but scored {localRiskScore}/100 local risk score. Flagged as Zero-Day Suspicion.");
+                    }
+
                     // Determine overall file status
                     string fileStatus = "Clean";
                     AnomalySeverity highestSev = AnomalySeverity.Info;
 
-                    if (fileAnomalies.Any(a => a.Severity == AnomalySeverity.Critical))
+                    if (isZeroDaySuspicion)
+                    {
+                        fileStatus = "Novel Zero-Day Threat Suspicion";
+                        highestSev = AnomalySeverity.Critical;
+                    }
+                    else if (fileAnomalies.Any(a => a.Severity == AnomalySeverity.Critical))
                     {
                         fileStatus = "Malicious / Critical";
                         highestSev = AnomalySeverity.Critical;
@@ -304,12 +375,15 @@ namespace FileAnomalyScanner.Services
                         SizeBytes = item.SizeBytes,
                         Sha256 = sha256,
                         Entropy = entropy,
+                        PeakBlockEntropy = peakBlockEntropy,
                         DetectedType = detectedType,
                         VirusTotal = vtReport,
                         SafeBrowsing = sbReport,
                         AnomalyCount = fileAnomalies.Count,
                         HighestSeverity = highestSev,
-                        Status = fileStatus
+                        Status = fileStatus,
+                        LocalRiskScore = localRiskScore,
+                        IsNovelZeroDaySuspicion = isZeroDaySuspicion
                     });
 
                     anomalies.AddRange(fileAnomalies);

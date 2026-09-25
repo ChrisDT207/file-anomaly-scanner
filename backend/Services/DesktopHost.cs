@@ -60,6 +60,8 @@ namespace FileAnomalyScanner.Services
             builder.Services.AddSingleton<IEntropyCalculator, EntropyCalculator>();
             builder.Services.AddSingleton<IArchiveExtractorService, ArchiveExtractorService>();
             builder.Services.AddSingleton<ISuspiciousSignatureManager, SuspiciousSignatureManager>();
+            builder.Services.AddSingleton<IStreamingFileInspector, StreamingFileInspector>();
+            builder.Services.AddSingleton<IPowerShellAstScanner, PowerShellAstScanner>();
             builder.Services.AddSingleton<IReportGenerator, ReportGenerator>();
             builder.Services.AddScoped<IScannerManager, ScannerManager>();
 

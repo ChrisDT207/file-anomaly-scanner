@@ -41,11 +41,14 @@ namespace FileAnomalyScanner.Models
         public long SizeBytes { get; set; }
         public string Sha256 { get; set; } = string.Empty;
         public double Entropy { get; set; }
+        public double PeakBlockEntropy { get; set; }
         public string DetectedType { get; set; } = string.Empty;
         public VirusTotalReport? VirusTotal { get; set; }
         public SafeBrowsingReport? SafeBrowsing { get; set; }
         public int AnomalyCount { get; set; }
         public AnomalySeverity HighestSeverity { get; set; } = AnomalySeverity.Info;
-        public string Status { get; set; } = "Clean"; // Clean, Suspicious, Malicious, Anomalous
+        public string Status { get; set; } = "Clean"; // Clean, Suspicious, Malicious, Anomalous, Novel Zero-Day Suspicion
+        public int LocalRiskScore { get; set; } // 0 - 100 composite local risk
+        public bool IsNovelZeroDaySuspicion { get; set; }
     }
 }

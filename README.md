@@ -26,6 +26,29 @@ Many weaponized files (such as PowerShell droppers, batch files, macros, PDFs, o
 
 ---
 
+### 3. Zero-OOM Streaming File Inspector & Large File Architecture
+Handling multi-gigabyte files (50 GB+ ISOs, disk images, or huge archives) previously created memory exhaustion risks. The new streaming pipeline:
+- **`ArrayPool<byte>` Buffer Pooling**: Reads streams in 64 KB rented chunks without allocating on the Large Object Heap (LOH).
+- **Single-Pass Shannon Entropy Histogram**: Computes mathematically exact Shannon entropy across any file size using a streaming `long[256]` byte frequency histogram:
+  $$H = -\sum_{i=0}^{255} p_i \log_2(p_i)$$
+- **Sliding-Window Block Entropy**: Computes localized entropy across 64 KB stepped windows, immediately flagging packed crypters, encrypted overlays, or hidden payloads even inside large files.
+- **Concurrent `IncrementalHash`**: Simultaneously generates cryptographic SHA-256 hashes during the single-pass stream traversal.
+
+### 4. Zero-Day Threat Arbiter & Privacy-Preserving Cloud Submission
+When VirusTotal returns `NotFound` for an unseen or freshly compiled zero-day binary, the scanner executes an enterprise-grade defense workflow:
+- **Composite Local Risk Scoring (0–100)**: Aggregates signals across magic byte masquerades (+40), AST script indicators (+35), evasive naming (+35), high-entropy sections (+25), and Safe Browsing matches (+50).
+- **Zero-Day Suspicion Alerting**: Novel files with local risk $\ge 35$ or Critical anomalies are elevated to **Novel Zero-Day Threat Suspicion**.
+- **Privacy-Preserving User Consent Modal**: Prompts the user with an explicit privacy warning before submitting binaries to VirusTotal (preventing leaks of proprietary code or confidential PII to third-party security vendors).
+
+### 5. Deep PowerShell Abstract Syntax Tree (AST) Inspection
+Replaces fragile regex with the official Microsoft PowerShell compiler parser (`System.Management.Automation.Language.Parser`):
+- **Evasion-Resistant Token Parsing**: Automatically normalizes backtick escapes (e.g. `` `I`E`x `` resolves to `IEx`) and whitespace obfuscation.
+- **Dynamic Member Invocation Extraction**: Detects staged download cradle methods (such as `.DownloadString()` or `.DownloadFile()`) even when obfuscated through string concatenation (e.g. `('Down'+'load'+'String')`).
+- **Heavy Concatenation Tree Detection**: Analyzes `BinaryExpressionAst` trees to identify automated obfuscation tools (e.g. Invoke-Obfuscation).
+- **Recursive Base64 Payload De-obfuscation**: Automatically extracts, decodes, and recursively runs AST analysis on embedded encoded script blocks.
+
+---
+
 ## Heuristic & Structural Anomaly Engine
 In addition to antivirus APIs, the scanner maintains its core heuristic inspection engine:
 - **Header vs. Extension Validation**: Detects file extension spoofing (e.g., Windows PE executables disguised as `.png`, `.jpg`, `.pdf`, `.docx`).
@@ -79,11 +102,12 @@ located directly in the root folder. It immediately launches the native desktop 
 
 ## Built-in Synthetic Test Suite
 
-Click **Load Synthetic Test Folder** in the top bar to test the complete detection pipeline with 7 pre-configured test items:
+Click **Load Synthetic Test Folder** in the top bar to test the complete detection pipeline with 8 pre-configured test items:
 1. `eicar_antivirus_test.com.txt`: The official EICAR antivirus test file (harmless string recognized across 65+ AV engines on VirusTotal).
 2. `updater_c2_test.ps1`: Script containing Google's official Safe Browsing malware test URL.
-3. `logo_banner.png`: Masqueraded Windows PE executable disguised with a `.png` image extension.
-4. `Q3_Financial_Report.pdf.exe`: Deceptive double-extension executable file.
-5. `deploy_updater.ps1`: Base64-encoded stealth PowerShell execution cradle.
-6. `audit_notes.txt`: High-entropy packed pseudo-random content.
-7. `config.txt`: Legitimate baseline text file with normal entropy.
+3. `obfuscated_cradle.ps1`: Dynamic memory execution cradle testing the PowerShell AST engine against string concatenation and backtick escapes (`.('Down'+'load'+'String')` and `` `I`Ex ``).
+4. `logo_banner.png`: Masqueraded Windows PE executable disguised with a `.png` image extension.
+5. `Q3_Financial_Report.pdf.exe`: Deceptive double-extension executable file.
+6. `deploy_updater.ps1`: Base64-encoded stealth PowerShell execution cradle.
+7. `audit_notes.txt`: High-entropy packed pseudo-random content.
+8. `config.txt`: Legitimate baseline text file with normal entropy.

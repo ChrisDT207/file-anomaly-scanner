@@ -17,15 +17,18 @@ namespace FileAnomalyScanner.Controllers
         private readonly IScannerManager _scannerManager;
         private readonly IMagicByteValidator _magicByteValidator;
         private readonly ISuspiciousSignatureManager _signatureManager;
+        private readonly IVirusTotalService _virusTotalService;
 
         public UploadController(
             IScannerManager scannerManager,
             IMagicByteValidator magicByteValidator,
-            ISuspiciousSignatureManager signatureManager)
+            ISuspiciousSignatureManager signatureManager,
+            IVirusTotalService virusTotalService)
         {
             _scannerManager = scannerManager;
             _magicByteValidator = magicByteValidator;
             _signatureManager = signatureManager;
+            _virusTotalService = virusTotalService;
         }
 
         [HttpPost("scan")]
@@ -92,6 +95,43 @@ namespace FileAnomalyScanner.Controllers
                 MagicByteSignatures = _magicByteValidator.GetSupportedSignatures(),
                 ActiveHeuristicRules = _signatureManager.GetActiveRules()
             });
+        }
+
+        [HttpPost("submit-virustotal")]
+        [RequestSizeLimit(35 * 1024 * 1024)]
+        public async Task<IActionResult> SubmitToVirusTotal(
+            IFormFile file,
+            CancellationToken cancellationToken = default)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new { success = false, message = "No file provided for VirusTotal submission." });
+            }
+
+            if (!_virusTotalService.IsEnabledAndConfigured())
+            {
+                return BadRequest(new { success = false, message = "VirusTotal API key is not configured or disabled in settings." });
+            }
+
+            try
+            {
+                using var stream = file.OpenReadStream();
+                var analysisId = await _virusTotalService.SubmitStreamForAnalysisAsync(file.FileName, stream, cancellationToken);
+                return Ok(new
+                {
+                    success = true,
+                    message = "File submitted to VirusTotal for multi-engine analysis.",
+                    analysisId = analysisId
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = $"Error submitting file to VirusTotal: {ex.Message}"
+                });
+            }
         }
     }
 }

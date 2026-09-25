@@ -287,5 +287,54 @@ namespace FileAnomalyScanner.Services
 
             return report;
         }
+
+        public async Task<string?> SubmitFileForAnalysisAsync(string fileName, byte[] content, CancellationToken cancellationToken = default)
+        {
+            using var ms = new System.IO.MemoryStream(content, writable: false);
+            return await SubmitStreamForAnalysisAsync(fileName, ms, cancellationToken);
+        }
+
+        public async Task<string?> SubmitStreamForAnalysisAsync(string fileName, System.IO.Stream stream, CancellationToken cancellationToken = default)
+        {
+            var settings = _settingsService.GetSettings();
+            if (string.IsNullOrWhiteSpace(settings.VirusTotalApiKey))
+            {
+                throw new InvalidOperationException("VirusTotal API key is not configured. Add a key in API Settings.");
+            }
+
+            // Standard upload endpoint max size is 32 MB
+            if (stream.CanSeek && stream.Length > 32 * 1024 * 1024)
+            {
+                throw new InvalidOperationException("File exceeds standard VirusTotal API free tier upload limit (32 MB).");
+            }
+
+            using var form = new MultipartFormDataContent();
+            var streamContent = new StreamContent(stream);
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+            form.Add(streamContent, "file", fileName);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://www.virustotal.com/api/v3/files")
+            {
+                Content = form
+            };
+            request.Headers.Add("x-apikey", settings.VirusTotalApiKey);
+
+            var response = await _httpClient.SendAsync(request, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadAsStringAsync(cancellationToken);
+                throw new HttpRequestException($"VirusTotal upload failed (HTTP {(int)response.StatusCode}): {err}");
+            }
+
+            var json = await response.Content.ReadAsStringAsync(cancellationToken);
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.TryGetProperty("data", out var data) &&
+                data.TryGetProperty("id", out var idProp))
+            {
+                return idProp.GetString();
+            }
+
+            return null;
+        }
     }
 }

@@ -9,5 +9,7 @@ namespace FileAnomalyScanner.Interfaces
         bool IsEnabledAndConfigured();
         Task<VirusTotalReport> LookupFileHashAsync(string sha256, CancellationToken cancellationToken = default);
         Task<TestApiResponse> TestConnectionAsync(string? testApiKey = null, CancellationToken cancellationToken = default);
+        Task<string?> SubmitFileForAnalysisAsync(string fileName, byte[] content, CancellationToken cancellationToken = default);
+        Task<string?> SubmitStreamForAnalysisAsync(string fileName, System.IO.Stream stream, CancellationToken cancellationToken = default);
     }
 }

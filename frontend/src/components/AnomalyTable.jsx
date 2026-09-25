@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import VendorDetectionsModal from './VendorDetectionsModal';
+import UploadConsentModal from './UploadConsentModal';
 
-export default function AnomalyTable({ anomalies, summary, files }) {
+export default function AnomalyTable({ anomalies, summary, files, fileItems = [], onLog }) {
   const [activeTab, setActiveTab] = useState('threats'); // 'threats' | 'allFiles'
   const [severityFilter, setSeverityFilter] = useState('ALL');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedVtItem, setSelectedVtItem] = useState(null);
+  const [consentUploadItem, setConsentUploadItem] = useState(null);
   const [copiedHash, setCopiedHash] = useState(null);
+
+  const getFileObject = (item) => {
+    if (!fileItems || fileItems.length === 0 || !item) return null;
+    const match = fileItems.find(
+      (f) => f.relativePath === item.filePath || f.file?.name === item.fileName
+    );
+    return match ? match.file : null;
+  };
 
   const severityLabels = {
     4: 'CRITICAL',
@@ -100,6 +110,29 @@ export default function AnomalyTable({ anomalies, summary, files }) {
     }
 
     if (vt && vt.status === 'NotFound') {
+      const isZeroDay = item.isNovelZeroDaySuspicion || 
+                        item.localRiskScore >= 35 || 
+                        item.status?.includes('Zero-Day') ||
+                        (item.highestSeverity && item.highestSeverity >= 3);
+
+      if (isZeroDay) {
+        return (
+          <div className="zero-day-cell-badge">
+            <span className="badge-flag zero-day-badge" title="Novel hash unseen on VirusTotal with high local anomaly score. Suspected Zero-Day.">
+              ⚠️ ZERO-DAY SUSPICION
+            </span>
+            <button
+              type="button"
+              className="btn-vt-upload"
+              onClick={() => setConsentUploadItem(item)}
+              title="Submit binary for cloud multi-engine analysis"
+            >
+              ☁️ Upload
+            </button>
+          </div>
+        );
+      }
+
       return (
         <a
           href={vtUrl}
@@ -226,6 +259,14 @@ export default function AnomalyTable({ anomalies, summary, files }) {
               {summary.safeBrowsingThreatCount || 0}
             </span>
           </div>
+          {summary.novelZeroDayThreatCount > 0 && (
+            <div className="summary-item">
+              <span className="summary-label">Zero-Day Suspicion:</span>
+              <span className="summary-val val-critical font-bold">
+                {summary.novelZeroDayThreatCount}
+              </span>
+            </div>
+          )}
           <div className="summary-item">
             <span className="summary-label">Duration:</span>
             <span className="summary-val">{summary.durationMs} ms</span>
@@ -484,6 +525,20 @@ export default function AnomalyTable({ anomalies, summary, files }) {
         <VendorDetectionsModal
           item={selectedVtItem}
           onClose={() => setSelectedVtItem(null)}
+        />
+      )}
+
+      {/* Cloud VirusTotal Submission Consent Modal */}
+      {consentUploadItem && (
+        <UploadConsentModal
+          targetItem={consentUploadItem}
+          fileObject={getFileObject(consentUploadItem)}
+          onClose={() => setConsentUploadItem(null)}
+          onSubmitted={(res) => {
+            if (onLog) {
+              onLog(`[THREAT INTEL] Submitted '${consentUploadItem.fileName}' to VirusTotal. Analysis ID: ${res.analysisId || 'Queued'}`);
+            }
+          }}
         />
       )}
     </div>
