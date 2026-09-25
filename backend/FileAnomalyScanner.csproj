@@ -20,7 +20,7 @@
 
   <!-- Ensure wwwroot is copied or available for content serving -->
   <ItemGroup>
-    <Content Include="wwwroot\**">
+    <Content Include="wwwroot\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

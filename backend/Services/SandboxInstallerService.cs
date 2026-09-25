@@ -43,7 +43,7 @@ namespace FileAnomalyScanner.Services
             // Exact batch script required to enumerate, stage, and enable hidden Sandbox packages on Windows Home
             var batchScript = new StringBuilder();
             batchScript.AppendLine("@echo off");
-            batchScript.AppendLine("dir /b %SystemRoot%\\servicing\\Packages\\*Containers*.mum >sandbox.txt");
+            batchScript.AppendLine("dir /b %SystemRoot%\\servicing\\Packages\\*Containers-DisposableClientVM*.mum >sandbox.txt");
             batchScript.AppendLine("for /f %%i in ('findstr /i . sandbox.txt 2^>nul') do dism /online /norestart /add-package:\"%SystemRoot%\\servicing\\Packages\\%%i\"");
             batchScript.AppendLine("del sandbox.txt");
             batchScript.AppendLine("Dism /online /enable-feature /featurename:Containers-DisposableClientVM /LimitAccess /ALL");
