@@ -176,7 +176,21 @@ namespace FileAnomalyScanner.Services
 
         private static string CreateIsolatedStagingDirectory()
         {
-            var basePath = Path.Combine(Path.GetTempPath(), "FileAnomalyScanner_Sandbox");
+            // Use CommonApplicationData (C:\ProgramData) rather than user-profile Temp directory
+            // because ProgramData allows read traversal across security principals and virtual accounts
+            string basePath;
+            try
+            {
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                basePath = string.IsNullOrWhiteSpace(appData) 
+                    ? Path.Combine(Path.GetTempPath(), "FileAnomalyScanner_Sandbox")
+                    : Path.Combine(appData, "FileAnomalyScanner_Sandbox");
+            }
+            catch
+            {
+                basePath = Path.Combine(Path.GetTempPath(), "FileAnomalyScanner_Sandbox");
+            }
+
             var uniqueDir = Path.Combine(basePath, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(uniqueDir);
             return uniqueDir;
@@ -184,7 +198,9 @@ namespace FileAnomalyScanner.Services
 
         private static string GenerateWsbXml(string hostFolderPath)
         {
-            const string sandboxTargetFolder = @"C:\Users\WDAGUtilityAccount\Desktop\QuarantineSandbox";
+            // Use a clean root sandbox directory rather than hardcoding WDAGUtilityAccount profile paths,
+            // avoiding Windows Sandbox account-name/SID resolution errors (0x80070534)
+            const string sandboxTargetFolder = @"C:\ThreatSample";
 
             var doc = new XDocument(
                 new XElement("Configuration",

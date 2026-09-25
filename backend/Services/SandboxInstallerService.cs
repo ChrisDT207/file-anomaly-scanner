@@ -40,15 +40,22 @@ namespace FileAnomalyScanner.Services
             var batchPath = Path.Combine(tempDir, batchFileName);
             var sandboxListPath = Path.Combine(tempDir, "sandbox.txt");
 
-            // Exact batch script required to enumerate, stage, and enable hidden Sandbox packages on Windows Home
+            // Exact batch script required to enumerate, stage, and enable hidden Sandbox packages on Windows Home,
+            // and configure the required security groups (Remote Desktop Users) and WDAGUtilityAccount SIDs
             var batchScript = new StringBuilder();
             batchScript.AppendLine("@echo off");
-            batchScript.AppendLine("echo [1/2] Verifying and registering Sandbox packages...");
-            batchScript.AppendLine("dir /b %SystemRoot%\\servicing\\Packages\\*Containers-DisposableClientVM*.mum >sandbox.txt");
+            batchScript.AppendLine("echo [1/3] Configuring Sandbox security groups and accounts...");
+            batchScript.AppendLine("net localgroup \"Remote Desktop Users\" >nul 2>&1");
+            batchScript.AppendLine("if %errorlevel% neq 0 net localgroup \"Remote Desktop Users\" /add");
+            batchScript.AppendLine("net user WDAGUtilityAccount /active:yes >nul 2>&1");
+            batchScript.AppendLine("net localgroup \"Users\" WDAGUtilityAccount /add >nul 2>&1");
+            batchScript.AppendLine("net localgroup \"Remote Desktop Users\" WDAGUtilityAccount /add >nul 2>&1");
+            batchScript.AppendLine("echo [2/3] Verifying and registering Sandbox container packages...");
+            batchScript.AppendLine("dir /b %SystemRoot%\\servicing\\Packages\\*Containers*.mum | findstr /v /i \"ApplicationGuard\" >sandbox.txt");
             batchScript.AppendLine("for /f %%i in ('findstr /i . sandbox.txt 2^>nul') do dism /online /norestart /add-package:\"%SystemRoot%\\servicing\\Packages\\%%i\"");
             batchScript.AppendLine("del sandbox.txt");
-            batchScript.AppendLine("echo [2/2] Enabling Windows Sandbox virtual container feature...");
-            batchScript.AppendLine("Dism /online /enable-feature /featurename:Containers-DisposableClientVM /ALL");
+            batchScript.AppendLine("echo [3/3] Enabling Windows Sandbox virtual container feature...");
+            batchScript.AppendLine("Dism /online /enable-feature /featurename:Containers-DisposableClientVM /ALL /norestart");
 
             try
             {
