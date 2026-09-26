@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import VendorDetectionsModal from './VendorDetectionsModal';
 import UploadConsentModal from './UploadConsentModal';
-import SandboxAlertModal from './SandboxAlertModal';
-import { detonateInSandbox } from '../utils/apiService';
+import CloudSandboxModal from './CloudSandboxModal';
 
 export default function AnomalyTable({ anomalies, summary, files, fileItems = [], onLog }) {
   const [activeTab, setActiveTab] = useState('threats'); // 'threats' | 'allFiles'
@@ -11,8 +10,9 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedVtItem, setSelectedVtItem] = useState(null);
   const [consentUploadItem, setConsentUploadItem] = useState(null);
-  const [sandboxAlert, setSandboxAlert] = useState(null);
-  const [isDetonating, setIsDetonating] = useState(false);
+  const [selectedCloudSandboxItem, setSelectedCloudSandboxItem] = useState(null);
+  const [eradicatedPaths, setEradicatedPaths] = useState(new Set());
+  const [dismissedItems, setDismissedItems] = useState(new Set());
   const [copiedHash, setCopiedHash] = useState(null);
 
   const getFileObject = (item) => {
@@ -21,41 +21,6 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
       (f) => f.relativePath === item.filePath || f.file?.name === item.fileName
     );
     return match ? match.file : null;
-  };
-
-  const handleDetonate = async (item) => {
-    if (isDetonating) return;
-    setIsDetonating(true);
-    const fileObj = getFileObject(item);
-    const targetName = item.fileName || item.filePath || 'selected file';
-
-    if (onLog) {
-      onLog(`[SANDBOX] Preparing isolated Windows Sandbox container for '${targetName}'...`);
-    }
-
-    try {
-      const res = await detonateInSandbox(item.filePath, fileObj);
-      setSandboxAlert({
-        type: 'success',
-        title: 'Windows Sandbox Launched',
-        message: res.message,
-        wsbConfig: res.wsbConfig
-      });
-      if (onLog) {
-        onLog(`[SANDBOX] [SUCCESS] Windows Sandbox launched (Air-Gapped, Read-Only).`);
-      }
-    } catch (err) {
-      setSandboxAlert({
-        type: 'error',
-        title: 'Windows Sandbox Unavailable',
-        message: err.message
-      });
-      if (onLog) {
-        onLog(`[SANDBOX] [ERROR] ${err.message}`);
-      }
-    } finally {
-      setIsDetonating(false);
-    }
   };
 
   const severityLabels = {
@@ -399,16 +364,27 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
                 </tr>
               ) : (
                 filteredAnomalies.map((item, index) => {
+                  const isEradicated = item.filePath && eradicatedPaths.has(item.filePath);
+                  const isDismissed = (item.filePath && dismissedItems.has(item.filePath)) ||
+                                      (item.sha256Hash && dismissedItems.has(item.sha256Hash));
                   const sevName = severityLabels[item.severity] || 'INFO';
                   const sha = item.sha256Hash || '';
                   const shortSha = sha.length > 14 ? `${sha.slice(0, 10)}...` : sha;
                   return (
-                    <tr key={index} className={`row-sev-${item.severity}`}>
+                    <tr key={index} className={`row-sev-${item.severity} ${isEradicated ? 'row-eradicated' : ''}`}>
                       <td>
-                        <span className={`badge badge-sev-${item.severity}`}>{sevName}</span>
+                        {isEradicated ? (
+                          <span className="badge badge-eradicated">💥 ERADICATED</span>
+                        ) : isDismissed ? (
+                          <span className="badge badge-dismissed">✅ MARKED SAFE</span>
+                        ) : (
+                          <span className={`badge badge-sev-${item.severity}`}>{sevName}</span>
+                        )}
                       </td>
                       <td className="cell-filepath" title={item.filePath}>
-                        <div className="font-bold">{item.fileName}</div>
+                        <div className={`font-bold ${isEradicated ? 'text-strikethrough' : ''}`}>
+                          {item.fileName}
+                        </div>
                         <div className="item-sub-path">{item.filePath}</div>
                       </td>
                       <td>
@@ -418,16 +394,17 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
                       <td className="cell-threat-intel">
                         {renderVtBadge(item)}
                         {renderSafeBrowsingBadge(item)}
-                        {(item.severity >= 3 || item.category?.includes('Antivirus') || item.category?.includes('Zero-Day') || item.category?.includes('Safe Browsing')) && (
+                        {isEradicated ? (
+                          <div className="eradicated-label font-mono">Payload Destroyed</div>
+                        ) : (
                           <div style={{ marginTop: '4px' }}>
                             <button
                               type="button"
-                              className="btn-detonate"
-                              onClick={() => handleDetonate(item)}
-                              disabled={isDetonating}
-                              title="Launch in isolated, air-gapped Windows Sandbox VM (Read-Only host filesystem)"
+                              className="btn-cloud-sandbox"
+                              onClick={() => setSelectedCloudSandboxItem(item)}
+                              title="Inspect cloud hypervisor behavioral telemetry (Process trees, C2 networking, MITRE ATT&CK, 1-click eradication)"
                             >
-                              📦 Detonate in Sandbox
+                              ☁️ Cloud Behavioral Detonation
                             </button>
                           </div>
                         )}
@@ -609,11 +586,29 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
         />
       )}
 
-      {/* Windows Sandbox Status & Alert Modal */}
-      {sandboxAlert && (
-        <SandboxAlertModal
-          alert={sandboxAlert}
-          onClose={() => setSandboxAlert(null)}
+      {/* Cloud Sandbox Forensic Telemetry & Remediation Modal */}
+      {selectedCloudSandboxItem && (
+        <CloudSandboxModal
+          targetItem={selectedCloudSandboxItem}
+          onClose={() => setSelectedCloudSandboxItem(null)}
+          onEradicated={(path, receipt) => {
+            setEradicatedPaths((prev) => new Set(prev).add(path));
+            if (onLog) {
+              onLog(`[ERADICATION] Marked '${path}' as permanently eradicated.`);
+            }
+          }}
+          onDismiss={(path, hash) => {
+            setDismissedItems((prev) => {
+              const updated = new Set(prev);
+              if (path) updated.add(path);
+              if (hash) updated.add(hash);
+              return updated;
+            });
+            if (onLog) {
+              onLog(`[ADJUDICATION] Marked '${path || hash}' as safe / dismissed.`);
+            }
+          }}
+          onLog={onLog}
         />
       )}
     </div>

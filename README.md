@@ -47,14 +47,16 @@ Replaces fragile regex with the official Microsoft PowerShell compiler parser (`
 - **Heavy Concatenation Tree Detection**: Analyzes `BinaryExpressionAst` trees to identify automated obfuscation tools (e.g. Invoke-Obfuscation).
 - **Recursive Base64 Payload De-obfuscation**: Automatically extracts, decodes, and recursively runs AST analysis on embedded encoded script blocks.
 
-### 6. Dynamic Windows Sandbox Detonation (.wsb Architecture)
-Allows security engineers to safely inspect, execute, or debug suspicious files in an ephemeral, hypervisor-isolated virtual machine:
-- **Dynamic `.wsb` Generation**: Automatically constructs tailored Windows Sandbox XML configuration files in temporary staging directories.
-- **Air-Gapped Isolation (`<Networking>Disable</Networking>`)**: Eliminates the risk of live malware contacting command-and-control (C2) servers or downloading secondary stages during manual inspection.
-- **Read-Only Host Mounting (`<ReadOnly>true</ReadOnly>`)**: Mounts only the dedicated threat staging folder into the sandbox as strictly read-only, preventing ransomware from writing to or encrypting host drives.
-- **Automated Boot Logon Command**: Injects a `<LogonCommand>` running `explorer.exe` targeted at the mapped sandbox directory, immediately revealing the payload to the user upon VM boot.
-- **1-Click UI Detonation**: Integrated **"📦 Detonate in Sandbox"** action buttons for any High, Critical, or Zero-Day threat with built-in prerequisites checking.
-- **Windows Home Automated Enabler**: Directly unpacks and installs hidden `Containers-DisposableClientVM` servicing packages via elevated DISM script (`ProcessStartInfo.Verb = "runas"`), enabling seamless detonation even on Windows Home editions.
+### 6. Cloud Sandbox Behavioral Telemetry & 1-Click File Eradication
+Completely replaces legacy local VM sandboxes with cloud hypervisor dynamic detonation telemetry powered by the VirusTotal v3 API:
+- **False Positive Adjudication**: Inspect actual dynamic execution logs from cloud sandbox hypervisors (process trees, command executions, C2 network connections, autostart registry keys, and dropped secondary payloads) to determine whether a local heuristic flag is an actual malicious threat or a benign false alarm.
+- **Visual Process Tree & Command Execution**: Displays the complete execution hierarchy of spawned child processes and command-line arguments (e.g. `cmd.exe /c ...` or `powershell.exe -enc ...`).
+- **Network & C2 Traffic Telemetry**: Tabulates all contacted IP addresses, outbound ports, transport protocols (TCP/UDP), DNS lookups, and HTTP web conversations.
+- **Persistence & Filesystem Forensics**: Pinpoints persistence mechanisms (such as autostart `CurrentVersion\Run` registry keys) and secondary dropper files.
+- **MITRE ATT&CK Technique Mapping**: Automatically maps behavioral actions to adversary tactics and techniques with severity ratings (e.g., `T1055 Process Injection`, `T1547 Boot or Logon Autostart Execution`).
+- **Automated Adjudication Heuristics**: Automatically scores execution traces as **🔴 Confirmed Threat (True Positive)** vs. **🟢 Benign Dynamic Behavior (Likely False Positive)** with forensic confidence scoring.
+- **💥 1-Click Cryptographic File Eradication**: If confirmed as a true positive, security operators can permanently neutralize the payload in 1 click using DOD multi-pass cryptographic overwrite (random byte scrambling + zero-fill + truncation + MFT metadata sanitization + deletion), updating the UI with an `[ERADICATED]` receipt.
+- **✅ Mark Safe / Dismiss**: Allows instant whitelisting and clearing of benign false positives.
 
 ---
 

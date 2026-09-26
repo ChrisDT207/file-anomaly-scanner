@@ -62,8 +62,7 @@ namespace FileAnomalyScanner.Services
             builder.Services.AddSingleton<ISuspiciousSignatureManager, SuspiciousSignatureManager>();
             builder.Services.AddSingleton<IStreamingFileInspector, StreamingFileInspector>();
             builder.Services.AddSingleton<IPowerShellAstScanner, PowerShellAstScanner>();
-            builder.Services.AddSingleton<ISandboxDetonationService, SandboxDetonationService>();
-            builder.Services.AddSingleton<ISandboxInstallerService, SandboxInstallerService>();
+            builder.Services.AddSingleton<IFileRemediationService, FileRemediationService>();
             builder.Services.AddSingleton<IReportGenerator, ReportGenerator>();
             builder.Services.AddScoped<IScannerManager, ScannerManager>();
 

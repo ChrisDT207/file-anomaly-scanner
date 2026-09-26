@@ -240,70 +240,80 @@ export async function submitFileToVirusTotal(file) {
 const API_SANDBOX = '/api/sandbox';
 
 /**
- * Checks if Windows Sandbox is available on host machine.
- * @returns {Promise<{ available: boolean, instructions: string }>}
+ * Checks if Cloud Sandbox Behavioral Telemetry engine is configured.
+ * @returns {Promise<{ available: boolean, type: string, provider: string, configured: boolean, message: string }>}
  */
-export async function checkSandboxStatus() {
+export async function checkCloudSandboxStatus() {
   try {
     const res = await fetch(`${API_SANDBOX}/status`);
     if (res.ok) {
       return await res.json();
     }
   } catch (err) {
-    console.error('Failed to query sandbox status', err);
+    console.error('Failed to query cloud sandbox status', err);
   }
-  return { available: false, instructions: 'Backend unreachable.' };
+  return { available: false, configured: false, message: 'Backend unreachable.' };
 }
 
 /**
- * Launches a file in an isolated Windows Sandbox VM environment.
- * @param {string|null} filePath Local host file path
- * @param {File|null} fileBlob In-memory File object if uploaded
- * @returns {Promise<any>}
+ * Retrieves cloud behavioral hypervisor telemetry summary from VirusTotal v3.
+ * @param {string} sha256 SHA-256 hash of the target payload
+ * @returns {Promise<any>} CloudSandboxReportDto
  */
-export async function detonateInSandbox(filePath = null, fileBlob = null) {
-  let res;
-  if (fileBlob) {
-    const formData = new FormData();
-    formData.append('file', fileBlob, fileBlob.name);
-    if (filePath) formData.append('filePath', filePath);
-
-    res = await fetch(`${API_SANDBOX}/detonate`, {
-      method: 'POST',
-      body: formData
-    });
-  } else if (filePath) {
-    res = await fetch(`${API_SANDBOX}/detonate-json`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filePath })
-    });
-  } else {
-    throw new Error('No file or path provided for sandbox detonation.');
+export async function fetchCloudBehavior(sha256) {
+  if (!sha256) {
+    throw new Error('SHA-256 hash is required to retrieve behavioral telemetry.');
   }
 
+  const res = await fetch(`${API_SANDBOX}/behavior/${encodeURIComponent(sha256)}`);
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.message || `Sandbox launch failed (HTTP ${res.status})`);
+    throw new Error(data.message || `Failed to fetch behavioral telemetry (HTTP ${res.status})`);
   }
   return data;
 }
 
 /**
- * Triggers automated DISM package staging with UAC elevation
- * to enable Windows Sandbox on Windows Home or unconfigured systems.
- * @returns {Promise<{ success: boolean, rebootRequired: boolean, message: string }>}
+ * Executes 1-click DOD multi-pass cryptographic file shredding and permanent eradication.
+ * Overwrites with cryptographically secure random bytes, zero-fills, truncates, sanitizes MFT metadata, and deletes.
+ * @param {string} filePath Host filesystem path
+ * @param {string|null} sha256 Optional expected SHA-256 hash for verification
+ * @returns {Promise<{ success: boolean, remediatedPath: string, timestamp: string, shredMethod: string, bytesOverwritten: number, message: string }>}
  */
-export async function forceInstallSandbox() {
-  const res = await fetch(`${API_SANDBOX}/force-install`, {
+export async function eradicateFile(filePath, sha256 = null) {
+  if (!filePath) {
+    throw new Error('Host file path is required to eradicate file from disk.');
+  }
+
+  const res = await fetch(`${API_SANDBOX}/remediate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filePath, sha256 })
   });
 
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.message || `Sandbox installation failed (HTTP ${res.status})`);
+    throw new Error(data.errorMessage || data.message || `File eradication failed (HTTP ${res.status})`);
   }
   return data;
 }
+
+/**
+ * Polls ongoing analysis status for a previously uploaded zero-day sample.
+ * @param {string} analysisId VirusTotal analysis ID
+ * @returns {Promise<any>} AnalysisStatusDto
+ */
+export async function pollAnalysisStatus(analysisId) {
+  if (!analysisId) {
+    throw new Error('Analysis ID is required.');
+  }
+
+  const res = await fetch(`${API_SANDBOX}/analysis/${encodeURIComponent(analysisId)}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || `Failed to query analysis status (HTTP ${res.status})`);
+  }
+  return data;
+}
+
 

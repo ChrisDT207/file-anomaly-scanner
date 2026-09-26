@@ -1352,379 +1352,891 @@ body {
   margin-top: 6px;
 }
 
-/* Windows Sandbox Detonation Styling */
-.btn-detonate {
-  background-color: #f3f0ff;
-  color: #6741d9;
-  border: 1px solid #d0bfff;
-  border-radius: 3px;
-  font-size: 10px;
+/* Cloud Sandbox Behavioral Telemetry & File Eradication Styling */
+.btn-cloud-sandbox {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #38bdf8;
+  border: 1px solid #0284c7;
+  border-radius: 4px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 3px 8px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  transition: all 0.15s ease;
+  gap: 5px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.2);
 }
 
-.btn-detonate:hover {
-  background-color: #e5dbff;
-  border-color: #b197fc;
+.btn-cloud-sandbox:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border-color: #38bdf8;
   transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(56, 189, 248, 0.35);
 }
 
-.btn-detonate:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
+.badge-eradicated {
+  background-color: #7f1d1d !important;
+  color: #fecaca !important;
+  border: 1px solid #ef4444 !important;
+  font-weight: 800;
+  letter-spacing: 0.5px;
 }
 
-.sandbox-alert-modal {
-  max-width: 620px;
-}
-
-.sandbox-info-panel {
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-left: 4px solid #51cf66;
-  border-radius: 4px;
-  padding: 12px 14px;
-  margin-top: 12px;
-}
-
-.info-title {
-  font-size: 12px;
+.badge-dismissed {
+  background-color: #064e3b !important;
+  color: #a7f3d0 !important;
+  border: 1px solid #10b981 !important;
   font-weight: 700;
-  color: #2b8a3e;
+}
+
+.row-eradicated {
+  background-color: rgba(127, 29, 29, 0.12) !important;
+  opacity: 0.85;
+}
+
+.text-strikethrough {
+  text-decoration: line-through;
+  color: #94a3b8;
+}
+
+.eradicated-label {
+  font-size: 11px;
+  color: #ef4444;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* Dark-Mode Forensic Inspection Modal */
+.cloud-sandbox-modal {
+  max-width: 920px;
+  width: 95%;
+  max-height: 90vh;
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border: 1px solid #334155;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.cs-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background-color: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.cs-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cs-header-icon {
+  font-size: 26px;
+}
+
+.cs-header-title h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: 0.3px;
+}
+
+.cs-header-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 3px;
+}
+
+.cs-target-name {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.cs-target-hash {
+  background-color: #0f172a;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+}
+
+/* Loading & Radar */
+.cs-loading-panel {
+  padding: 48px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.cs-radar-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #1e293b;
+  border-top-color: #38bdf8;
+  border-right-color: #0284c7;
+  border-radius: 50%;
+  animation: csSpin 0.9s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+}
+
+@keyframes csSpin {
+  to { transform: rotate(360deg); }
+}
+
+.cs-loading-panel h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #e2e8f0;
+}
+
+.cs-loading-panel p {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+  max-width: 520px;
+}
+
+/* Error Panel */
+.cs-error-panel {
+  padding: 36px 24px;
+  text-align: center;
+  background-color: #1e293b;
+  margin: 20px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+}
+
+.cs-error-icon {
+  font-size: 32px;
   margin-bottom: 8px;
 }
 
-.info-list {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 12px;
-  color: #495057;
-  line-height: 1.5;
+.cs-error-panel h4 {
+  margin: 0 0 8px 0;
+  color: #fbbf24;
 }
 
-.info-list li {
+.cs-error-panel p {
+  color: #cbd5e1;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.cs-link-btn {
+  display: inline-block;
+  background-color: #0284c7;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* Modal Body */
+.cs-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Verdict Banner */
+.cs-verdict-banner {
+  display: flex;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 8px;
+  align-items: flex-start;
+  transition: all 0.2s ease;
+}
+
+.verdict-true-positive {
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.4) 0%, rgba(69, 10, 10, 0.6) 100%);
+  border: 1px solid #ef4444;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+}
+
+.verdict-false-positive {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.35) 0%, rgba(2, 44, 34, 0.6) 100%);
+  border: 1px solid #10b981;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.verdict-inconclusive {
+  background: linear-gradient(135deg, rgba(120, 53, 15, 0.35) 0%, rgba(69, 26, 3, 0.6) 100%);
+  border: 1px solid #f59e0b;
+}
+
+.cs-verdict-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.cs-verdict-info {
+  flex: 1;
+}
+
+.cs-verdict-top-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 6px;
 }
 
-.wsb-path-box {
-  margin-top: 10px;
-  padding: 8px 10px;
-  background-color: #e9ecef;
-  border-radius: 3px;
+.cs-verdict-badge {
   font-size: 11px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  word-break: break-all;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid currentColor;
 }
 
-.path-label {
+.verdict-true-positive .cs-verdict-badge {
+  color: #fca5a5;
+  border-color: #ef4444;
+}
+
+.verdict-false-positive .cs-verdict-badge {
+  color: #6ee7b7;
+  border-color: #10b981;
+}
+
+.verdict-inconclusive .cs-verdict-badge {
+  color: #fcd34d;
+  border-color: #f59e0b;
+}
+
+.cs-confidence-pill {
+  font-size: 11px;
   font-weight: 700;
-  color: #495057;
+  color: #94a3b8;
+  background-color: #0f172a;
+  padding: 2px 7px;
+  border-radius: 12px;
+  border: 1px solid #334155;
+}
+
+.cs-verdict-title {
+  margin: 0 0 6px 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.cs-verdict-desc {
+  margin: 0;
+  font-size: 12.5px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.cs-indicators-box {
+  margin-top: 10px;
+  background-color: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.cs-indicators-box strong {
+  color: #e2e8f0;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.cs-indicators-box ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #cbd5e1;
+}
+
+.cs-indicators-box li {
+  margin-bottom: 3px;
+}
+
+/* Tabs */
+.cs-tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 4px;
+  overflow-x: auto;
+}
+
+.cs-tab-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.15s ease;
   white-space: nowrap;
 }
 
-.sandbox-troubleshoot-panel {
-  background-color: #fff9db;
-  border: 1px solid #ffe066;
-  border-left: 4px solid #f59f00;
-  border-radius: 4px;
-  padding: 12px 14px;
-  margin-top: 12px;
+.cs-tab-btn:hover {
+  color: #f8fafc;
+  background-color: #1e293b;
 }
 
-.troubleshoot-title {
-  font-size: 12px;
+.cs-tab-btn.active {
+  color: #38bdf8;
+  background-color: #1e293b;
+  border-bottom: 2px solid #38bdf8;
+}
+
+/* Tab Content */
+.cs-tab-content {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+  min-height: 200px;
+}
+
+.cs-tab-pane h4 {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #38bdf8;
   font-weight: 700;
-  color: #e67700;
-  margin-bottom: 6px;
 }
 
-.sandbox-troubleshoot-panel p {
+.cs-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cs-stat-card {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.cs-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cs-stat-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin: 4px 0 2px 0;
+}
+
+.cs-stat-sub {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.text-danger {
+  color: #f87171 !important;
+}
+
+.cs-forensic-notes {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  border-left: 4px solid #38bdf8;
+  padding: 12px 14px;
+  border-radius: 4px;
   font-size: 12px;
-  color: #495057;
-  margin: 0 0 8px 0;
 }
 
-.troubleshoot-steps {
+.cs-forensic-notes h4 {
+  margin: 0 0 6px 0;
+  color: #38bdf8;
+  font-size: 12px;
+}
+
+.cs-forensic-notes ul {
   margin: 0;
   padding-left: 18px;
-  font-size: 12px;
-  color: #495057;
+  color: #cbd5e1;
   line-height: 1.5;
 }
 
-.troubleshoot-steps li {
-  margin-bottom: 5px;
+.cs-empty-state {
+  padding: 24px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-.troubleshoot-steps kbd,
-.troubleshoot-steps code {
-  font-size: 11px;
-  background-color: #ffffff;
-  border: 1px solid #ced4da;
-  padding: 1px 4px;
-  border-radius: 3px;
+.cs-empty-state span {
+  color: #10b981;
+  font-size: 16px;
+  font-weight: 800;
 }
 
-/* Windows Home Sandbox Installer & Reboot UI */
-.sandbox-home-installer-box {
-  background: linear-gradient(135deg, #f8f9fa 0%, #edf2ff 100%);
-  border: 1px solid #bac8ff;
-  border-left: 4px solid #4c6ef5;
+/* Process List */
+.cs-process-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cs-process-item {
+  background-color: #0f172a;
+  border: 1px solid #334155;
   border-radius: 6px;
-  padding: 14px 16px;
-  margin-top: 14px;
+  padding: 10px 12px;
 }
 
-.installer-header {
+.cs-process-title {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 6px;
+  font-size: 12px;
 }
 
-.installer-badge {
+.cs-proc-badge {
+  background-color: #1e293b;
+  color: #38bdf8;
+  border: 1px solid #0284c7;
+  padding: 1px 6px;
+  border-radius: 3px;
   font-size: 10px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background-color: #3b5bdb;
+}
+
+.cs-code-box {
+  background-color: #020617;
+  color: #a5f3fc;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  word-break: break-all;
+  border: 1px solid #1e293b;
+}
+
+/* Telemetry Table */
+.cs-telemetry-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cs-telemetry-table th {
+  background-color: #1e293b;
+  color: #94a3b8;
+  text-align: left;
+  padding: 8px 12px;
+  font-weight: 700;
+  border-bottom: 1px solid #334155;
+}
+
+.cs-telemetry-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #1e293b;
+  color: #cbd5e1;
+}
+
+.cs-proto-badge {
+  background-color: #1e293b;
+  color: #38bdf8;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.cs-dns-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cs-dns-item {
+  background-color: #0f172a;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dns-host {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.dns-resolved {
+  color: #94a3b8;
+}
+
+.cs-http-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cs-http-item {
+  background-color: #0f172a;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.http-method {
+  background-color: #0284c7;
   color: #ffffff;
-  padding: 2px 7px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.http-url {
+  color: #cbd5e1;
+  word-break: break-all;
+  flex: 1;
+}
+
+.http-status {
+  color: #10b981;
+  font-weight: 700;
+}
+
+/* Registry List */
+.cs-reg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cs-reg-item {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 11px;
+}
+
+.reg-key {
+  color: #fca5a5;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.reg-val {
+  color: #94a3b8;
+  margin-top: 3px;
+  word-break: break-all;
+}
+
+/* MITRE Grid */
+.cs-mitre-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.cs-mitre-card {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.cs-mitre-card.sev-critical {
+  border-left: 4px solid #ef4444;
+}
+
+.cs-mitre-card.sev-high {
+  border-left: 4px solid #f97316;
+}
+
+.cs-mitre-card.sev-medium {
+  border-left: 4px solid #eab308;
+}
+
+.cs-mitre-card.sev-low {
+  border-left: 4px solid #38bdf8;
+}
+
+.mitre-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.mitre-id {
+  font-family: monospace;
+  font-weight: 800;
+  font-size: 11px;
+  color: #38bdf8;
+  background-color: #1e293b;
+  padding: 1px 6px;
   border-radius: 3px;
 }
 
-.installer-header h4 {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 700;
-  color: #1c7ed6;
+.mitre-sev-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
 }
 
-.installer-desc {
+.mitre-sev-badge.sev-critical {
+  background-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+.mitre-sev-badge.sev-high {
+  background-color: #7c2d12;
+  color: #fdba74;
+}
+
+.mitre-sev-badge.sev-medium {
+  background-color: #713f12;
+  color: #fde047;
+}
+
+.mitre-sev-badge.sev-low {
+  background-color: #075985;
+  color: #bae6fd;
+}
+
+.mitre-name {
+  font-weight: 700;
   font-size: 12px;
-  color: #495057;
-  margin: 0 0 12px 0;
-  line-height: 1.45;
+  color: #f1f5f9;
+  margin-bottom: 4px;
 }
 
-.installer-action-row {
-  margin-bottom: 10px;
+.mitre-tactic {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-bottom: 6px;
 }
 
-.btn-force-install {
-  background: linear-gradient(135deg, #4c6ef5 0%, #364fc7 100%);
-  color: #ffffff;
-  border: none;
+.mitre-desc {
+  font-size: 11px;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+/* Eradication Receipt */
+.cs-receipt-box {
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.5) 0%, rgba(69, 10, 10, 0.7) 100%);
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+.receipt-icon {
+  font-size: 32px;
+}
+
+.receipt-info h4 {
+  margin: 0 0 4px 0;
+  color: #fca5a5;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.receipt-info p {
+  margin: 0 0 4px 0;
+  color: #f8fafc;
+  font-size: 12px;
+}
+
+.receipt-meta {
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.cs-err-notice {
+  background-color: #7f1d1d;
+  color: #fecaca;
+  border: 1px solid #ef4444;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Modal Footer */
+.cs-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background-color: #1e293b;
+  border-top: 1px solid #334155;
+  gap: 12px;
+}
+
+.cs-vt-link {
+  color: #38bdf8;
+  font-size: 12px;
   font-weight: 700;
-  font-size: 13px;
-  padding: 8px 16px;
+  text-decoration: none;
+}
+
+.cs-vt-link:hover {
+  text-decoration: underline;
+}
+
+.cs-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-mark-safe {
+  background-color: transparent;
+  color: #34d399;
+  border: 1px solid #10b981;
+  padding: 7px 14px;
   border-radius: 5px;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(76, 110, 245, 0.35);
+  transition: all 0.15s ease;
+}
+
+.btn-mark-safe:hover {
+  background-color: rgba(16, 185, 129, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-eradicate {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: #ffffff;
+  border: 1px solid #f87171;
+  padding: 7px 16px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.4);
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.btn-force-install:hover:not(:disabled) {
-  background: linear-gradient(135deg, #3b5bdb 0%, #2b3a8c 100%);
+.btn-eradicate:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(76, 110, 245, 0.45);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5);
 }
 
-.btn-force-install:disabled {
-  opacity: 0.65;
+.btn-eradicate:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.install-uac-warning {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  background-color: #fff9db;
-  border: 1px solid #ffe066;
-  border-radius: 4px;
-  padding: 9px 12px;
-  font-size: 11px;
-  color: #7950f2;
-  line-height: 1.45;
-}
-
-.install-uac-warning.installing-pulse {
-  background-color: #e7f5ff;
-  border-color: #a5d8ff;
-  color: #1864ab;
-  animation: pulseBox 2s infinite ease-in-out;
-}
-
-@keyframes pulseBox {
-  0% { opacity: 0.95; }
-  50% { opacity: 0.75; }
-  100% { opacity: 0.95; }
-}
-
-.install-uac-warning .warning-icon {
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.install-uac-warning strong {
-  color: #d9480f;
-}
-
-.install-uac-warning.installing-pulse strong {
-  color: #1971c2;
-}
-
-.sandbox-manual-details {
-  margin-top: 14px;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  overflow: hidden;
-  background-color: #f8f9fa;
-}
-
-.manual-summary {
-  font-size: 12px;
-  font-weight: 600;
-  color: #495057;
-  padding: 8px 12px;
-  cursor: pointer;
-  user-select: none;
-  background-color: #e9ecef;
-}
-
-.manual-summary:hover {
-  background-color: #dee2e6;
-}
-
-.sandbox-manual-details .sandbox-troubleshoot-panel {
-  margin-top: 0;
-  border: none;
-  border-radius: 0;
-}
-
-/* Installing In-Progress State */
-.sandbox-installing-panel {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  margin-top: 10px;
-}
-
-.installing-spinner-wrap {
-  flex-shrink: 0;
-  padding-top: 4px;
-}
-
-.spinner-ring {
-  width: 28px;
-  height: 28px;
-  border: 3px solid #d0ebff;
-  border-top-color: #228be6;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.installing-text-wrap h4 {
-  margin: 0 0 4px 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: #1971c2;
-}
-
-.installing-text-wrap p {
-  margin: 0 0 10px 0;
-  font-size: 12px;
-  color: #495057;
-}
-
-/* Post-Install Reboot Required Panel */
-.sandbox-reboot-panel {
-  background: linear-gradient(135deg, #ebfbee 0%, #e6fcf5 100%);
-  border: 1px solid #63e6be;
-  border-left: 5px solid #20c997;
-  border-radius: 6px;
-  padding: 16px;
-  margin-top: 10px;
-}
-
-.reboot-header {
+.cs-confirm-eradicate-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 8px;
+  background-color: #450a0a;
+  border: 1px solid #ef4444;
+  padding: 4px 8px;
+  border-radius: 5px;
 }
 
-.reboot-badge-icon {
-  font-size: 24px;
-}
-
-.reboot-title-wrap h4 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: #087f5b;
-}
-
-.reboot-subtitle {
+.confirm-text {
   font-size: 11px;
-  color: #2b8a3e;
-  font-weight: 600;
+  color: #fca5a5;
+  font-weight: 700;
 }
 
-.reboot-desc {
-  font-size: 12px;
-  color: #212529;
-  line-height: 1.5;
-  margin: 0 0 12px 0;
+.btn-confirm-shred {
+  background-color: #dc2626;
+  color: #ffffff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
-.reboot-instruction-box {
-  background-color: rgba(255, 255, 255, 0.85);
-  border: 1px solid #b2f2bb;
-  border-radius: 4px;
-  padding: 10px 14px;
+.btn-confirm-shred:hover:not(:disabled) {
+  background-color: #b91c1c;
 }
 
-.instruction-heading {
+.btn-cancel-shred {
+  background-color: transparent;
+  color: #94a3b8;
+  border: 1px solid #64748b;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.btn-cancel-shred:hover {
+  color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.btn-cs-close {
+  background-color: #334155;
+  color: #f8fafc;
+  border: 1px solid #475569;
+  padding: 7px 14px;
+  border-radius: 5px;
   font-size: 12px;
   font-weight: 700;
-  color: #2b8a3e;
-  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.reboot-steps {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 12px;
-  color: #343a40;
-  line-height: 1.6;
+.btn-cs-close:hover {
+  background-color: #475569;
 }
 
-.reboot-steps li {
-  margin-bottom: 4px;
-}
-
-.install-err-box {
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
 
