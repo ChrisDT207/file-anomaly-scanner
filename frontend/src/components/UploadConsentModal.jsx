@@ -41,15 +41,14 @@ export default function UploadConsentModal({ targetItem, fileObject, onClose, on
       <div className="modal-container consent-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title-wrap">
-            <span className="modal-icon">☁️</span>
             <h3>Submit Novel Binary to VirusTotal</h3>
           </div>
-          <button type="button" className="btn-close" onClick={onClose}>✕</button>
+          <button type="button" className="btn-close" onClick={onClose}>&times;</button>
         </div>
 
         <div className="modal-body">
           <div className="zero-day-notice-card">
-            <div className="notice-badge">⚠️ ZERO-DAY DETECTION WORKFLOW</div>
+            <div className="notice-badge">ZERO-DAY DETECTION WORKFLOW</div>
             <h4>{fileName}</h4>
             <p className="notice-sub">
               This file was <strong>not found</strong> in VirusTotal's hash registry, but our local heuristic engine flagged it with a <strong>{riskScore}/100 Local Threat Score</strong>.
@@ -61,7 +60,7 @@ export default function UploadConsentModal({ targetItem, fileObject, onClose, on
           </div>
 
           <div className="privacy-warning-box">
-            <div className="privacy-title">🔒 Privacy &amp; Data Confidentiality Notice</div>
+            <div className="privacy-title">Privacy &amp; Data Confidentiality Notice</div>
             <p>
               Submitting a physical file to VirusTotal distributes its full binary contents to <strong>over 70 antivirus vendors and threat intelligence partners globally</strong>.
             </p>
@@ -74,13 +73,13 @@ export default function UploadConsentModal({ targetItem, fileObject, onClose, on
 
           {errorMsg && (
             <div className="alert-box alert-error">
-              <span>⚠️</span> {errorMsg}
+              {errorMsg}
             </div>
           )}
 
           {successInfo ? (
             <div className="alert-box alert-success">
-              <span>✓</span> {successInfo.message}
+              {successInfo.message}
               <div className="analysis-id font-mono">
                 Analysis ID: {successInfo.analysisId || 'Queued'}
               </div>

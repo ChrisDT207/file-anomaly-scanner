@@ -30,7 +30,6 @@ export default function VendorDetectionsModal({ item, onClose }) {
       <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title-wrap">
-            <span className="modal-icon">🦠</span>
             <div>
               <h2 className="modal-title">VirusTotal Antivirus Engine Breakdown</h2>
               <p className="modal-subtitle">
@@ -39,7 +38,7 @@ export default function VendorDetectionsModal({ item, onClose }) {
             </div>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} title="Close">
-            ✕
+            &times;
           </button>
         </div>
 
@@ -65,7 +64,7 @@ export default function VendorDetectionsModal({ item, onClose }) {
                     onClick={copyHash}
                     title="Copy SHA-256"
                   >
-                    {copied ? '✓ Copied' : '📋 Copy'}
+                    {copied ? 'Copied' : 'Copy'}
                   </button>
                 </span>
               </div>
@@ -166,7 +165,7 @@ export default function VendorDetectionsModal({ item, onClose }) {
             rel="noopener noreferrer"
             className="btn btn-primary"
           >
-            Open Full VirusTotal Report ↗
+            Open Full VirusTotal Report
           </a>
           <button type="button" className="btn btn-secondary" onClick={onClose}>
             Close

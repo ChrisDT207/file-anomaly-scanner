@@ -100,7 +100,7 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
           onClick={() => setSelectedVtItem(item)}
           title="Click to view detailed Antivirus engine detections"
         >
-          🦠 {vt.maliciousCount}/{vt.totalEngines} AV MALICIOUS
+          {vt.maliciousCount}/{vt.totalEngines} AV MALICIOUS
         </button>
       );
     }
@@ -108,7 +108,7 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
     if (vt && vt.status === 'Clean') {
       return (
         <span className="badge-pass" title={`Clean across ${vt.totalEngines} engines`}>
-          ✓ 0/{vt.totalEngines} CLEAN
+          0/{vt.totalEngines} CLEAN
         </span>
       );
     }
@@ -123,7 +123,7 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
         return (
           <div className="zero-day-cell-badge">
             <span className="badge-flag zero-day-badge" title="Novel hash unseen on VirusTotal with high local anomaly score. Suspected Zero-Day.">
-              ⚠️ ZERO-DAY SUSPICION
+              ZERO-DAY SUSPICION
             </span>
             <button
               type="button"
@@ -131,7 +131,7 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
               onClick={() => setConsentUploadItem(item)}
               title="Submit binary for cloud multi-engine analysis"
             >
-              ☁️ Upload
+              Upload
             </button>
           </div>
         );
@@ -145,7 +145,7 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
           className="badge-link badge-unknown"
           title="Hash not found in VirusTotal database. Click to view or submit."
         >
-          ○ UNKNOWN (VT) ↗
+          UNKNOWN (VT)
         </a>
       );
     }
@@ -159,7 +159,7 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
           className="badge-link badge-ratelimit"
           title="Rate limited. Click for manual lookup on VirusTotal."
         >
-          ⏱ VT RATE LIMIT ↗
+          VT RATE LIMIT
         </a>
       );
     }
@@ -173,7 +173,7 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
           className="badge-link badge-vt-ready"
           title="Click to lookup hash on VirusTotal"
         >
-          🔍 VT HASH LOOKUP ↗
+          VT HASH LOOKUP
         </a>
       );
     }
@@ -189,7 +189,7 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
       const threatType = sbMatch ? sbMatch.threatType : sbReport.matches[0]?.threatType || 'MALWARE';
       return (
         <span className="badge-flag" title={`Google Safe Browsing Threat: ${threatType}`}>
-          🚫 SAFE BROWSING: {threatType}
+          SAFE BROWSING: {threatType}
         </span>
       );
     }
@@ -197,7 +197,7 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
     if (sbReport && sbReport.urlsChecked && sbReport.urlsChecked.length > 0) {
       return (
         <span className="badge-pass" title="All embedded URLs verified safe by Google">
-          ✓ {sbReport.urlsChecked.length} URL(s) Clean
+          {sbReport.urlsChecked.length} URL(s) Clean
         </span>
       );
     }
@@ -374,9 +374,9 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
                     <tr key={index} className={`row-sev-${item.severity} ${isEradicated ? 'row-eradicated' : ''}`}>
                       <td>
                         {isEradicated ? (
-                          <span className="badge badge-eradicated">💥 ERADICATED</span>
+                          <span className="badge badge-eradicated">ERADICATED</span>
                         ) : isDismissed ? (
-                          <span className="badge badge-dismissed">✅ MARKED SAFE</span>
+                          <span className="badge badge-dismissed">MARKED SAFE</span>
                         ) : (
                           <span className={`badge badge-sev-${item.severity}`}>{sevName}</span>
                         )}
@@ -404,7 +404,7 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
                               onClick={() => setSelectedCloudSandboxItem(item)}
                               title="Inspect cloud hypervisor behavioral telemetry (Process trees, C2 networking, MITRE ATT&CK, 1-click eradication)"
                             >
-                              ☁️ Cloud Behavioral Detonation
+                              Cloud Behavioral Telemetry
                             </button>
                           </div>
                         )}
@@ -419,16 +419,16 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
                               onClick={() => copyHash(sha)}
                               title="Copy full SHA-256"
                             >
-                              {copiedHash === sha ? '✓' : '📋'}
+                              {copiedHash === sha ? 'Copied' : 'Copy'}
                             </button>
                             <a
                               href={`https://www.virustotal.com/gui/file/${sha}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="link-icon"
-                              title="Search on VirusTotal ↗"
+                              title="Search on VirusTotal"
                             >
-                              ↗
+                              VT
                             </a>
                           </div>
                         ) : (
@@ -483,30 +483,34 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
                 filteredFiles.map((file, index) => {
                   const sha = file.sha256 || '';
                   const shortSha = sha.length > 14 ? `${sha.slice(0, 10)}...` : sha;
+                  const isFileEradicated = file.filePath && eradicatedPaths.has(file.filePath);
                   const isMalicious = file.status.includes('Malicious');
-                  const isClean = file.status === 'Clean';
 
                   return (
-                    <tr key={index} className={isMalicious ? 'row-sev-4' : ''}>
+                    <tr key={index} className={`${isMalicious ? 'row-sev-4' : ''} ${isFileEradicated ? 'row-eradicated' : ''}`}>
                       <td>
-                        <span
-                          className={`badge ${
-                            isMalicious
-                              ? 'badge-sev-4'
-                              : file.status.includes('High')
-                              ? 'badge-sev-3'
-                              : file.status.includes('Suspicious')
-                              ? 'badge-sev-2'
-                              : file.anomalyCount > 0
-                              ? 'badge-sev-1'
-                              : 'badge-sev-0'
-                          }`}
-                        >
-                          {file.status}
-                        </span>
+                        {isFileEradicated ? (
+                          <span className="badge badge-eradicated">ERADICATED</span>
+                        ) : (
+                          <span
+                            className={`badge ${
+                              isMalicious
+                                ? 'badge-sev-4'
+                                : file.status.includes('High')
+                                ? 'badge-sev-3'
+                                : file.status.includes('Suspicious')
+                                ? 'badge-sev-2'
+                                : file.anomalyCount > 0
+                                ? 'badge-sev-1'
+                                : 'badge-sev-0'
+                            }`}
+                          >
+                            {file.status}
+                          </span>
+                        )}
                       </td>
                       <td className="cell-filepath" title={file.filePath}>
-                        <div className="font-bold">{file.fileName}</div>
+                        <div className={`font-bold ${isFileEradicated ? 'text-strikethrough' : ''}`}>{file.fileName}</div>
                         <div className="item-sub-path">{file.filePath}</div>
                       </td>
                       <td>{formatFileSize(file.sizeBytes)}</td>
@@ -520,16 +524,16 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
                               onClick={() => copyHash(sha)}
                               title="Copy SHA-256"
                             >
-                              {copiedHash === sha ? '✓' : '📋'}
+                              {copiedHash === sha ? 'Copied' : 'Copy'}
                             </button>
                             <a
                               href={`https://www.virustotal.com/gui/file/${sha}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="link-icon"
-                              title="Lookup on VirusTotal ↗"
+                              title="Lookup on VirusTotal"
                             >
-                              ↗
+                              VT
                             </a>
                           </div>
                         ) : (
@@ -540,18 +544,21 @@ export default function AnomalyTable({ anomalies, summary, files, fileItems = []
                       <td>{file.detectedType || '—'}</td>
                       <td>
                         {renderVtBadge(file)}
-                        {(file.highestSeverity >= 3 || file.isNovelZeroDaySuspicion || file.status?.includes('Malicious') || file.status?.includes('High')) && (
-                          <div style={{ marginTop: '4px' }}>
-                            <button
-                              type="button"
-                              className="btn-detonate"
-                              onClick={() => handleDetonate(file)}
-                              disabled={isDetonating}
-                              title="Launch in isolated, air-gapped Windows Sandbox VM (Read-Only host filesystem)"
-                            >
-                              📦 Detonate in Sandbox
-                            </button>
-                          </div>
+                        {isFileEradicated ? (
+                          <div className="eradicated-label font-mono">Payload Destroyed</div>
+                        ) : (
+                          (file.highestSeverity >= 3 || file.isNovelZeroDaySuspicion || file.status?.includes('Malicious') || file.status?.includes('High')) && (
+                            <div style={{ marginTop: '4px' }}>
+                              <button
+                                type="button"
+                                className="btn-cloud-sandbox"
+                                onClick={() => setSelectedCloudSandboxItem(file)}
+                                title="Inspect cloud hypervisor behavioral telemetry and dynamic execution"
+                              >
+                                Cloud Behavioral Telemetry
+                              </button>
+                            </div>
+                          )
                         )}
                       </td>
                       <td>{renderSafeBrowsingBadge(file) || <span className="badge-pass">Clean</span>}</td>

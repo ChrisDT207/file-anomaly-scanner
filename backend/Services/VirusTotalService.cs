@@ -376,8 +376,8 @@ namespace FileAnomalyScanner.Services
                             Verdict = avReport != null && avReport.MaliciousCount >= 3 ? "TruePositive" : "Inconclusive",
                             ConfidenceScore = avReport != null && avReport.MaliciousCount >= 3 ? 80 : 35,
                             Title = avReport != null && avReport.MaliciousCount >= 3 
-                                ? "🔴 Antivirus Consensus Threat (Dynamic Telemetry Pending)" 
-                                : "🟡 Cloud Sandbox Telemetry Unavailable",
+                                ? "Antivirus Consensus Threat (Dynamic Telemetry Pending)" 
+                                : "Cloud Sandbox Telemetry Unavailable",
                             Justification = avReport != null && avReport.MaliciousCount >= 3
                                 ? $"Although hypervisor behavioral execution logs have not yet been published, {avReport.MaliciousCount} security vendors flagged this hash as malicious."
                                 : "No hypervisor behavioral detonation logs found for this hash. The file may be novel, recently compiled, or has not yet undergone dynamic sandbox execution.",
@@ -886,7 +886,7 @@ namespace FileAnomalyScanner.Services
                 {
                     Verdict = "TruePositive",
                     ConfidenceScore = confidence,
-                    Title = "🔴 Confirmed Malicious Threat (True Positive)",
+                    Title = "Confirmed Malicious Threat (True Positive)",
                     Justification = "Dynamic cloud hypervisor sandbox telemetry confirms high-confidence malicious activity. The payload demonstrated unauthorized behavioral execution, including persistence registry modifications, secondary dropper staging, or active external C2 networking.",
                     Indicators = indicators
                 };
@@ -898,7 +898,7 @@ namespace FileAnomalyScanner.Services
             {
                 Verdict = "LikelyFalsePositive",
                 ConfidenceScore = confidence,
-                Title = "🟢 Benign Dynamic Behavior (Likely False Positive)",
+                Title = "Benign Dynamic Behavior (Likely False Positive)",
                 Justification = "Dynamic cloud hypervisor sandbox observed clean execution without malicious intent. Zero persistence run-keys were modified, no secondary executables were dropped, and no unauthorized external C2 connections were initiated. The local scanner heuristic detection is adjudicated as a benign false positive.",
                 Indicators = new List<string>
                 {

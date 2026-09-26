@@ -36,7 +36,6 @@ export default function CloudSandboxModal({
         const data = await fetchCloudBehavior(sha256);
         if (isMounted) {
           setReport(data);
-          // If true positive, start on verdict or MITRE
           if (data.verdictSummary?.verdict === 'TruePositive') {
             setActiveTab('verdict');
           }
@@ -68,7 +67,7 @@ export default function CloudSandboxModal({
     setEradicationError(null);
 
     if (onLog) {
-      onLog(`[ERADICATION] Initiating DOD cryptographic shredding on '${filePath}'...`);
+      onLog(`[ERADICATION] Initiating cryptographic shredding on '${filePath}'...`);
     }
 
     try {
@@ -110,129 +109,146 @@ export default function CloudSandboxModal({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-content cloud-sandbox-modal"
+        className="modal-content modal-lg cloud-sandbox-modal"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="cs-modal-header">
-          <div className="cs-header-title">
-            <span className="cs-header-icon">☁️</span>
+        <div className="modal-header">
+          <div className="modal-title-wrap">
             <div>
-              <h3>Cloud Sandbox Behavioral Telemetry</h3>
-              <div className="cs-header-subtitle">
-                <span className="cs-target-name">{fileName}</span>
-                {sha256 && (
-                  <span className="cs-target-hash font-mono" title={sha256}>
-                    SHA-256: {sha256.slice(0, 16)}...
-                  </span>
-                )}
-              </div>
+              <h2 className="modal-title">Cloud Sandbox Behavioral Telemetry</h2>
+              <p className="modal-subtitle">
+                Hypervisor execution analysis and adjudication for {fileName}
+              </p>
             </div>
           </div>
-          <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close">
+          <button type="button" className="modal-close-btn" onClick={onClose} title="Close">
             &times;
           </button>
         </div>
 
         {/* Loading State */}
         {loading && (
-          <div className="cs-loading-panel">
-            <div className="cs-radar-spinner"></div>
-            <h4>Extracting Hypervisor Dynamic Execution Telemetry...</h4>
-            <p>Correlating process trees, C2 network connections, and MITRE ATT&CK techniques via VirusTotal Cloud Hypervisors.</p>
+          <div className="modal-body modal-loading-body">
+            <div className="spinner-ring"></div>
+            <h4>Extracting Cloud Sandbox Telemetry...</h4>
+            <p>Retrieving hypervisor execution traces, process trees, and network activity.</p>
           </div>
         )}
 
         {/* Error / Offline State */}
         {!loading && fetchError && (
-          <div className="cs-error-panel">
-            <div className="cs-error-icon">⚠️</div>
-            <h4>Cloud Telemetry Unavailable</h4>
-            <p>{fetchError}</p>
+          <div className="modal-body">
+            <div className="alert-box alert-error">
+              <strong>Telemetry Unavailable:</strong> {fetchError}
+            </div>
             {report?.permalink && (
-              <a
-                href={report.permalink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="cs-link-btn"
-              >
-                Inspect on VirusTotal ↗
-              </a>
+              <div style={{ marginTop: '12px' }}>
+                <a
+                  href={report.permalink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary btn-sm"
+                >
+                  Inspect on VirusTotal
+                </a>
+              </div>
             )}
           </div>
         )}
 
         {/* Loaded Telemetry Content */}
         {!loading && !fetchError && report && (
-          <div className="cs-body">
-            {/* Verdict Banner */}
-            <div
-              className={`cs-verdict-banner ${
-                isTruePositive
-                  ? 'verdict-true-positive'
-                  : isLikelyFalsePositive
-                  ? 'verdict-false-positive'
-                  : 'verdict-inconclusive'
-              }`}
-            >
-              <div className="cs-verdict-icon">
-                {isTruePositive ? '🔴' : isLikelyFalsePositive ? '🟢' : '🟡'}
-              </div>
-              <div className="cs-verdict-info">
-                <div className="cs-verdict-top-row">
-                  <span className="cs-verdict-badge">
-                    {isTruePositive
-                      ? 'CONFIRMED THREAT (TRUE POSITIVE)'
-                      : isLikelyFalsePositive
-                      ? 'BENIGN DYNAMIC BEHAVIOR (LIKELY FALSE POSITIVE)'
-                      : 'DYNAMIC TELEMETRY INCONCLUSIVE'}
-                  </span>
-                  {verdict?.confidenceScore && (
-                    <span className="cs-confidence-pill">
-                      Confidence: {verdict.confidenceScore}%
-                    </span>
-                  )}
+          <div className="modal-body cs-modal-body">
+            {/* Target File Info Summary Card */}
+            <div className="cs-info-card">
+              <div className="cs-info-grid">
+                <div className="cs-info-cell">
+                  <span className="cs-info-lbl">Target File:</span>
+                  <span className="cs-info-val font-bold">{fileName}</span>
                 </div>
-                <h4 className="cs-verdict-title">{verdict?.title || 'Dynamic Execution Verdict'}</h4>
-                <p className="cs-verdict-desc">{verdict?.justification}</p>
-
-                {verdict?.indicators && verdict.indicators.length > 0 && (
-                  <div className="cs-indicators-box">
-                    <strong>Adjudication Signals:</strong>
-                    <ul>
-                      {verdict.indicators.map((ind, idx) => (
-                        <li key={idx}>{ind}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                <div className="cs-info-cell">
+                  <span className="cs-info-lbl">Filesystem Path:</span>
+                  <span className="cs-info-val font-mono">{filePath || 'Uploaded File'}</span>
+                </div>
+                <div className="cs-info-cell">
+                  <span className="cs-info-lbl">SHA-256:</span>
+                  <span className="cs-info-val font-mono">{sha256}</span>
+                </div>
               </div>
             </div>
 
+            {/* Verdict Alert Banner */}
+            <div
+              className={`cs-verdict-card ${
+                isTruePositive
+                  ? 'cs-verdict-danger'
+                  : isLikelyFalsePositive
+                  ? 'cs-verdict-success'
+                  : 'cs-verdict-warning'
+              }`}
+            >
+              <div className="cs-verdict-header">
+                <span
+                  className={`cs-verdict-pill ${
+                    isTruePositive
+                      ? 'pill-danger'
+                      : isLikelyFalsePositive
+                      ? 'pill-success'
+                      : 'pill-warning'
+                  }`}
+                >
+                  {isTruePositive
+                    ? 'CONFIRMED THREAT (TRUE POSITIVE)'
+                    : isLikelyFalsePositive
+                    ? 'BENIGN DYNAMIC BEHAVIOR (LIKELY FALSE POSITIVE)'
+                    : 'TELEMETRY INCONCLUSIVE'}
+                </span>
+                {verdict?.confidenceScore && (
+                  <span className="cs-confidence-tag">
+                    Confidence: {verdict.confidenceScore}%
+                  </span>
+                )}
+              </div>
+              <h4 className="cs-verdict-title">{verdict?.title || 'Execution Verdict'}</h4>
+              <p className="cs-verdict-desc">{verdict?.justification}</p>
+
+              {verdict?.indicators && verdict.indicators.length > 0 && (
+                <div className="cs-indicators-list">
+                  <strong>Adjudication Signals:</strong>
+                  <ul>
+                    {verdict.indicators.map((ind, idx) => (
+                      <li key={idx}>{ind}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
             {/* Navigation Tabs */}
-            <div className="cs-tabs">
+            <div className="cs-nav-tabs">
               <button
                 type="button"
-                className={`cs-tab-btn ${activeTab === 'verdict' ? 'active' : ''}`}
+                className={`cs-nav-tab ${activeTab === 'verdict' ? 'active' : ''}`}
                 onClick={() => setActiveTab('verdict')}
               >
-                ⚖️ Adjudication Overview
+                Overview
               </button>
               <button
                 type="button"
-                className={`cs-tab-btn ${activeTab === 'processes' ? 'active' : ''}`}
+                className={`cs-nav-tab ${activeTab === 'processes' ? 'active' : ''}`}
                 onClick={() => setActiveTab('processes')}
               >
-                🌳 Process Tree &amp; Execution ({report.processesCreated?.length || 0})
+                Processes ({report.processesCreated?.length || 0})
               </button>
               <button
                 type="button"
-                className={`cs-tab-btn ${activeTab === 'network' ? 'active' : ''}`}
+                className={`cs-nav-tab ${activeTab === 'network' ? 'active' : ''}`}
                 onClick={() => setActiveTab('network')}
               >
-                🌐 Network &amp; C2 (
+                Network (
                 {(report.networkActivity?.contactedIps?.length || 0) +
                   (report.networkActivity?.dnsLookups?.length || 0) +
                   (report.networkActivity?.httpRequests?.length || 0)}
@@ -240,64 +256,60 @@ export default function CloudSandboxModal({
               </button>
               <button
                 type="button"
-                className={`cs-tab-btn ${activeTab === 'persistence' ? 'active' : ''}`}
+                className={`cs-nav-tab ${activeTab === 'persistence' ? 'active' : ''}`}
                 onClick={() => setActiveTab('persistence')}
               >
-                💾 Persistence &amp; Filesystem (
+                Persistence &amp; Filesystem (
                 {(report.fileAndRegistryTampering?.filesDropped?.length || 0) +
                   (report.fileAndRegistryTampering?.registryKeysSet?.length || 0)}
                 )
               </button>
               <button
                 type="button"
-                className={`cs-tab-btn ${activeTab === 'mitre' ? 'active' : ''}`}
+                className={`cs-nav-tab ${activeTab === 'mitre' ? 'active' : ''}`}
                 onClick={() => setActiveTab('mitre')}
               >
-                🛡️ MITRE ATT&amp;CK ({report.mitreAttackSignatures?.length || 0})
+                MITRE ATT&amp;CK ({report.mitreAttackSignatures?.length || 0})
               </button>
             </div>
 
             {/* Tab Contents */}
-            <div className="cs-tab-content">
+            <div className="cs-tab-panel">
               {/* Tab: Overview */}
               {activeTab === 'verdict' && (
-                <div className="cs-tab-pane">
-                  <div className="cs-summary-grid">
-                    <div className="cs-stat-card">
-                      <div className="cs-stat-label">Processes Spawned</div>
-                      <div className="cs-stat-val">{report.processesCreated?.length || 0}</div>
-                      <div className="cs-stat-sub">Child processes executed</div>
+                <div className="cs-panel-content">
+                  <div className="cs-stat-row">
+                    <div className="cs-metric-box">
+                      <span className="cs-metric-num">{report.processesCreated?.length || 0}</span>
+                      <span className="cs-metric-lbl">Processes Spawned</span>
                     </div>
-                    <div className="cs-stat-card">
-                      <div className="cs-stat-label">External IPs Contacted</div>
-                      <div className="cs-stat-val">{report.networkActivity?.contactedIps?.length || 0}</div>
-                      <div className="cs-stat-sub">Outbound network endpoints</div>
+                    <div className="cs-metric-box">
+                      <span className="cs-metric-num">{report.networkActivity?.contactedIps?.length || 0}</span>
+                      <span className="cs-metric-lbl">Contacted External IPs</span>
                     </div>
-                    <div className="cs-stat-card">
-                      <div className="cs-stat-label">Files Dropped / Modified</div>
-                      <div className="cs-stat-val">
+                    <div className="cs-metric-box">
+                      <span className="cs-metric-num">
                         {(report.fileAndRegistryTampering?.filesDropped?.length || 0) +
                           (report.fileAndRegistryTampering?.filesWritten?.length || 0)}
-                      </div>
-                      <div className="cs-stat-sub">Secondary payloads written</div>
+                      </span>
+                      <span className="cs-metric-lbl">Files Dropped / Written</span>
                     </div>
-                    <div className="cs-stat-card">
-                      <div className="cs-stat-label">MITRE ATT&amp;CK Flags</div>
-                      <div className={`cs-stat-val ${report.mitreAttackSignatures?.length > 0 ? 'text-danger' : ''}`}>
+                    <div className="cs-metric-box">
+                      <span className={`cs-metric-num ${report.mitreAttackSignatures?.length > 0 ? 'text-critical' : ''}`}>
                         {report.mitreAttackSignatures?.length || 0}
-                      </div>
-                      <div className="cs-stat-sub">Matched adversarial techniques</div>
+                      </span>
+                      <span className="cs-metric-lbl">MITRE ATT&amp;CK Flags</span>
                     </div>
                   </div>
 
-                  <div className="cs-forensic-notes">
-                    <h4>Principal Engineer Forensics Guide:</h4>
+                  <div className="cs-guidance-box">
+                    <strong>Adjudication Guidance:</strong>
                     <ul>
                       <li>
-                        <strong>Benign False Positive Indicators:</strong> Clean process exit codes, no network calls outside local loopback, no registry Run keys, no dropped files in <code>%TEMP%</code> or <code>System32</code>.
+                        <strong>Benign False Positive Signals:</strong> Clean process termination, absence of external network beacons, zero autostart registry Run keys, and no secondary payloads written to temporary folders.
                       </li>
                       <li>
-                        <strong>Confirmed Malicious Indicators:</strong> Hidden execution (e.g. <code>powershell -w hidden -enc</code>), beaconing to high-port TCP/UDP, autostart registry creation, credential dumping, or process injection.
+                        <strong>True Positive Signals:</strong> Hidden execution flags, outbound connections to external IPs, creation of reboot survival registry keys, or known adversarial MITRE techniques.
                       </li>
                     </ul>
                   </div>
@@ -306,22 +318,31 @@ export default function CloudSandboxModal({
 
               {/* Tab: Processes */}
               {activeTab === 'processes' && (
-                <div className="cs-tab-pane">
+                <div className="cs-panel-content">
                   {(!report.processesCreated || report.processesCreated.length === 0) ? (
-                    <div className="cs-empty-state">
-                      <span>✓</span> No secondary child processes were spawned during sandbox execution.
+                    <div className="cs-empty-msg">
+                      No secondary child processes were spawned during sandbox execution.
                     </div>
                   ) : (
-                    <div className="cs-process-list">
-                      {report.processesCreated.map((proc, idx) => (
-                        <div key={idx} className="cs-process-item">
-                          <div className="cs-process-title">
-                            <span className="cs-proc-badge">PID {proc.pid || idx + 1}</span>
-                            <strong>{proc.processName || 'Execution Command'}</strong>
-                          </div>
-                          <div className="cs-code-box font-mono">{proc.commandLine}</div>
-                        </div>
-                      ))}
+                    <div className="cs-process-table-wrap">
+                      <table className="anomaly-table">
+                        <thead>
+                          <tr>
+                            <th style={{ width: '100px' }}>PID</th>
+                            <th style={{ width: '180px' }}>Process Name</th>
+                            <th>Command Line</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {report.processesCreated.map((proc, idx) => (
+                            <tr key={idx}>
+                              <td className="font-mono">{proc.pid || `PID-${idx + 1}`}</td>
+                              <td className="font-bold">{proc.processName || 'Execution Command'}</td>
+                              <td className="font-mono cs-cmd-cell">{proc.commandLine}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   )}
                 </div>
@@ -329,14 +350,14 @@ export default function CloudSandboxModal({
 
               {/* Tab: Network */}
               {activeTab === 'network' && (
-                <div className="cs-tab-pane">
-                  <h4>Contacted IP Addresses &amp; C2 Channels:</h4>
+                <div className="cs-panel-content">
+                  <h4 className="cs-section-subtitle">Contacted IP Addresses:</h4>
                   {(!report.networkActivity?.contactedIps || report.networkActivity.contactedIps.length === 0) ? (
-                    <div className="cs-empty-state">
-                      <span>✓</span> No external outbound IP connections observed during execution.
+                    <div className="cs-empty-msg">
+                      No outbound IP connections observed during execution.
                     </div>
                   ) : (
-                    <table className="cs-telemetry-table">
+                    <table className="anomaly-table">
                       <thead>
                         <tr>
                           <th>Destination IP</th>
@@ -347,49 +368,60 @@ export default function CloudSandboxModal({
                       <tbody>
                         {report.networkActivity.contactedIps.map((ip, idx) => (
                           <tr key={idx}>
-                            <td className="font-mono">{ip.ipAddress}</td>
-                            <td>{ip.port || '443'}</td>
-                            <td>
-                              <span className="cs-proto-badge">{ip.protocol || 'TCP'}</span>
-                            </td>
+                            <td className="font-mono font-bold">{ip.ipAddress}</td>
+                            <td>{ip.port || 443}</td>
+                            <td>{ip.protocol || 'TCP'}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   )}
 
-                  <h4 style={{ marginTop: '16px' }}>DNS Hostname Lookups:</h4>
+                  <h4 className="cs-section-subtitle" style={{ marginTop: '16px' }}>DNS Lookups:</h4>
                   {(!report.networkActivity?.dnsLookups || report.networkActivity.dnsLookups.length === 0) ? (
-                    <div className="cs-empty-state">
-                      <span>✓</span> No external DNS queries performed.
+                    <div className="cs-empty-msg">
+                      No external DNS lookups observed.
                     </div>
                   ) : (
-                    <div className="cs-dns-list">
-                      {report.networkActivity.dnsLookups.map((dns, idx) => (
-                        <div key={idx} className="cs-dns-item font-mono">
-                          <span className="dns-host">🌐 {dns.hostname}</span>
-                          {dns.resolvedIps && dns.resolvedIps.length > 0 && (
-                            <span className="dns-resolved">→ {dns.resolvedIps.join(', ')}</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    <table className="anomaly-table">
+                      <thead>
+                        <tr>
+                          <th>Hostname</th>
+                          <th>Resolved IP Addresses</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {report.networkActivity.dnsLookups.map((dns, idx) => (
+                          <tr key={idx}>
+                            <td className="font-mono font-bold">{dns.hostname}</td>
+                            <td className="font-mono">{dns.resolvedIps?.join(', ') || 'Unresolved'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   )}
 
                   {report.networkActivity?.httpRequests && report.networkActivity.httpRequests.length > 0 && (
                     <>
-                      <h4 style={{ marginTop: '16px' }}>HTTP Web Conversations:</h4>
-                      <div className="cs-http-list">
-                        {report.networkActivity.httpRequests.map((http, idx) => (
-                          <div key={idx} className="cs-http-item">
-                            <span className="http-method">{http.method}</span>
-                            <span className="http-url font-mono">{http.url}</span>
-                            {http.responseCode && (
-                              <span className="http-status">HTTP {http.responseCode}</span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
+                      <h4 className="cs-section-subtitle" style={{ marginTop: '16px' }}>HTTP Requests:</h4>
+                      <table className="anomaly-table">
+                        <thead>
+                          <tr>
+                            <th style={{ width: '80px' }}>Method</th>
+                            <th>URL</th>
+                            <th style={{ width: '100px' }}>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {report.networkActivity.httpRequests.map((http, idx) => (
+                            <tr key={idx}>
+                              <td className="font-bold">{http.method}</td>
+                              <td className="font-mono cs-cmd-cell">{http.url}</td>
+                              <td>{http.responseCode ? `HTTP ${http.responseCode}` : 'N/A'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </>
                   )}
                 </div>
@@ -397,35 +429,43 @@ export default function CloudSandboxModal({
 
               {/* Tab: Persistence & Filesystem */}
               {activeTab === 'persistence' && (
-                <div className="cs-tab-pane">
-                  <h4>Autostart &amp; Persistence Registry Keys:</h4>
+                <div className="cs-panel-content">
+                  <h4 className="cs-section-subtitle">Persistence Registry Keys:</h4>
                   {(!report.fileAndRegistryTampering?.registryKeysSet || report.fileAndRegistryTampering.registryKeysSet.length === 0) ? (
-                    <div className="cs-empty-state">
-                      <span>✓</span> No autostart or persistence registry keys were written.
+                    <div className="cs-empty-msg">
+                      No autostart or persistence registry keys were written.
                     </div>
                   ) : (
-                    <div className="cs-reg-list">
-                      {report.fileAndRegistryTampering.registryKeysSet.map((reg, idx) => (
-                        <div key={idx} className="cs-reg-item">
-                          <div className="reg-key font-mono">🔑 {reg.key}</div>
-                          {reg.value && <div className="reg-val font-mono">Value: {reg.value}</div>}
-                        </div>
-                      ))}
-                    </div>
+                    <table className="anomaly-table">
+                      <thead>
+                        <tr>
+                          <th>Registry Key</th>
+                          <th>Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {report.fileAndRegistryTampering.registryKeysSet.map((reg, idx) => (
+                          <tr key={idx}>
+                            <td className="font-mono font-bold text-critical">{reg.key}</td>
+                            <td className="font-mono">{reg.value || 'N/A'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   )}
 
-                  <h4 style={{ marginTop: '16px' }}>Files Dropped by Payload:</h4>
+                  <h4 className="cs-section-subtitle" style={{ marginTop: '16px' }}>Dropped Files:</h4>
                   {(!report.fileAndRegistryTampering?.filesDropped || report.fileAndRegistryTampering.filesDropped.length === 0) ? (
-                    <div className="cs-empty-state">
-                      <span>✓</span> No secondary files dropped to disk.
+                    <div className="cs-empty-msg">
+                      No secondary files were dropped to disk.
                     </div>
                   ) : (
-                    <table className="cs-telemetry-table">
+                    <table className="anomaly-table">
                       <thead>
                         <tr>
                           <th>Path Dropped</th>
                           <th>Type</th>
-                          <th>Payload SHA-256</th>
+                          <th>SHA-256 Hash</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -433,7 +473,7 @@ export default function CloudSandboxModal({
                           <tr key={idx}>
                             <td className="font-mono">{file.path}</td>
                             <td>{file.type || 'Binary / Data'}</td>
-                            <td className="font-mono">{file.sha256 ? `${file.sha256.slice(0, 12)}...` : '—'}</td>
+                            <td className="font-mono">{file.sha256 ? `${file.sha256.slice(0, 16)}...` : 'N/A'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -444,27 +484,46 @@ export default function CloudSandboxModal({
 
               {/* Tab: MITRE ATT&CK */}
               {activeTab === 'mitre' && (
-                <div className="cs-tab-pane">
+                <div className="cs-panel-content">
                   {(!report.mitreAttackSignatures || report.mitreAttackSignatures.length === 0) ? (
-                    <div className="cs-empty-state">
-                      <span>✓</span> Zero adversarial MITRE ATT&amp;CK techniques triggered.
+                    <div className="cs-empty-msg">
+                      Zero adversarial MITRE ATT&amp;CK techniques identified.
                     </div>
                   ) : (
-                    <div className="cs-mitre-grid">
-                      {report.mitreAttackSignatures.map((m, idx) => (
-                        <div key={idx} className={`cs-mitre-card sev-${(m.severity || 'medium').toLowerCase()}`}>
-                          <div className="mitre-header">
-                            <span className="mitre-id">{m.id}</span>
-                            <span className={`mitre-sev-badge sev-${(m.severity || 'medium').toLowerCase()}`}>
-                              {m.severity || 'DETECTED'}
-                            </span>
-                          </div>
-                          <div className="mitre-name">{m.name}</div>
-                          {m.tactic && <div className="mitre-tactic">Tactic: {m.tactic}</div>}
-                          <div className="mitre-desc">{m.description}</div>
-                        </div>
-                      ))}
-                    </div>
+                    <table className="anomaly-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: '90px' }}>ID</th>
+                          <th style={{ width: '100px' }}>Severity</th>
+                          <th style={{ width: '180px' }}>Technique</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {report.mitreAttackSignatures.map((m, idx) => (
+                          <tr key={idx}>
+                            <td className="font-mono font-bold">{m.id}</td>
+                            <td>
+                              <span
+                                className={`badge ${
+                                  m.severity === 'CRITICAL'
+                                    ? 'badge-sev-4'
+                                    : m.severity === 'HIGH'
+                                    ? 'badge-sev-3'
+                                    : m.severity === 'MEDIUM'
+                                    ? 'badge-sev-2'
+                                    : 'badge-sev-1'
+                                }`}
+                              >
+                                {m.severity || 'MEDIUM'}
+                              </span>
+                            </td>
+                            <td className="font-bold">{m.name}</td>
+                            <td>{m.description}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   )}
                 </div>
               )}
@@ -472,74 +531,69 @@ export default function CloudSandboxModal({
 
             {/* Eradication Receipt Notice */}
             {eradicationReceipt && (
-              <div className="cs-receipt-box">
-                <div className="receipt-icon">💥</div>
-                <div className="receipt-info">
-                  <h4>Payload Successfully Eradicated</h4>
-                  <p>{eradicationReceipt.message}</p>
-                  <div className="receipt-meta font-mono">
-                    Method: {eradicationReceipt.shredMethod} | Bytes Overwritten: {eradicationReceipt.bytesOverwritten}
-                  </div>
+              <div className="alert-box alert-success cs-receipt-alert">
+                <strong>Payload Successfully Eradicated:</strong>
+                <div>{eradicationReceipt.message}</div>
+                <div className="receipt-sub font-mono">
+                  Method: {eradicationReceipt.shredMethod} | Bytes Overwritten: {eradicationReceipt.bytesOverwritten}
                 </div>
               </div>
             )}
 
             {/* Eradication Error Notice */}
             {eradicationError && (
-              <div className="cs-err-notice">
-                ⚠️ Eradication Error: {eradicationError}
+              <div className="alert-box alert-error">
+                <strong>Eradication Error:</strong> {eradicationError}
               </div>
             )}
           </div>
         )}
 
-        {/* Footer Actions */}
-        <div className="cs-modal-footer">
-          <div className="cs-footer-left">
+        {/* Modal Footer Actions */}
+        <div className="modal-footer cs-modal-footer">
+          <div className="cs-footer-links">
             {report?.permalink && (
               <a
                 href={report.permalink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="cs-vt-link"
+                className="btn btn-secondary btn-sm"
               >
-                VirusTotal Cloud Telemetry ↗
+                Open VirusTotal Report
               </a>
             )}
           </div>
 
-          <div className="cs-footer-right">
-            {/* Mark as Safe / Dismiss Button */}
+          <div className="cs-footer-btns">
             {!eradicationReceipt && (
               <button
                 type="button"
-                className="btn-mark-safe"
+                className="btn btn-secondary"
                 onClick={handleDismiss}
                 title="Adjudicate anomaly as a benign false positive and dismiss alert"
               >
-                ✅ Mark as Safe / Dismiss
+                Mark as Safe / Dismiss
               </button>
             )}
 
-            {/* 1-Click Eradication Button */}
             {filePath && !eradicationReceipt && (
               <>
                 {!confirmEradicate ? (
                   <button
                     type="button"
-                    className="btn-eradicate"
+                    className="btn btn-danger"
                     onClick={() => setConfirmEradicate(true)}
                     disabled={isEradicating}
-                    title="Execute DOD multi-pass cryptographic overwrite and permanent file destruction"
+                    title="Execute cryptographic multi-pass overwrite and permanent file destruction"
                   >
-                    💥 Neutralize &amp; Eradicate File
+                    Neutralize &amp; Eradicate File
                   </button>
                 ) : (
-                  <div className="cs-confirm-eradicate-wrap">
-                    <span className="confirm-text">Permanently shred from disk?</span>
+                  <div className="cs-confirm-shred-box">
+                    <span className="cs-confirm-label">Confirm permanent deletion?</span>
                     <button
                       type="button"
-                      className="btn-confirm-shred"
+                      className="btn btn-danger btn-sm"
                       onClick={handleEradicate}
                       disabled={isEradicating}
                     >
@@ -547,7 +601,7 @@ export default function CloudSandboxModal({
                     </button>
                     <button
                       type="button"
-                      className="btn-cancel-shred"
+                      className="btn btn-secondary btn-sm"
                       onClick={() => setConfirmEradicate(false)}
                       disabled={isEradicating}
                     >
@@ -558,7 +612,7 @@ export default function CloudSandboxModal({
               </>
             )}
 
-            <button type="button" className="btn-cs-close" onClick={onClose}>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
               {eradicationReceipt ? 'Done' : 'Close'}
             </button>
           </div>

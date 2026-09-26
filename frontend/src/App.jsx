@@ -226,7 +226,7 @@ export default function App() {
             onClick={() => setIsSettingsOpen(true)}
             title="Configure VirusTotal and Google Safe Browsing API Keys"
           >
-            ⚙️ API Settings
+            API Settings
           </button>
 
           <span
@@ -247,7 +247,7 @@ export default function App() {
             onClick={handleLoadDemoFolder}
             disabled={isScanning}
           >
-            🧪 Load Synthetic Test Folder
+            Load Synthetic Test Folder
           </button>
         </div>
       </header>

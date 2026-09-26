@@ -137,7 +137,6 @@ export default function SecuritySettingsModal({ isOpen, onClose, onSettingsUpdat
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title-wrap">
-            <span className="modal-icon">🛡️</span>
             <div>
               <h2 className="modal-title">Threat Intelligence &amp; Antivirus APIs</h2>
               <p className="modal-subtitle">
@@ -146,7 +145,7 @@ export default function SecuritySettingsModal({ isOpen, onClose, onSettingsUpdat
             </div>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} title="Close">
-            ✕
+            &times;
           </button>
         </div>
 
@@ -243,7 +242,7 @@ export default function SecuritySettingsModal({ isOpen, onClose, onSettingsUpdat
                       onClick={() => setShowVtKey(!showVtKey)}
                       title={showVtKey ? 'Hide key' : 'Show key'}
                     >
-                      {showVtKey ? '🙈' : '👁️'}
+                      {showVtKey ? 'Hide' : 'Show'}
                     </button>
                     <button
                       type="button"
@@ -261,7 +260,7 @@ export default function SecuritySettingsModal({ isOpen, onClose, onSettingsUpdat
                         vtTestStatus.success ? 'test-success' : 'test-failure'
                       }`}
                     >
-                      {vtTestStatus.success ? '✓ ' : '⚠ '}
+                      {vtTestStatus.success ? 'Success: ' : 'Error: '}
                       {vtTestStatus.message}
                     </div>
                   )}
@@ -333,7 +332,7 @@ export default function SecuritySettingsModal({ isOpen, onClose, onSettingsUpdat
                       onClick={() => setShowSbKey(!showSbKey)}
                       title={showSbKey ? 'Hide key' : 'Show key'}
                     >
-                      {showSbKey ? '🙈' : '👁️'}
+                      {showSbKey ? 'Hide' : 'Show'}
                     </button>
                     <button
                       type="button"
@@ -351,7 +350,7 @@ export default function SecuritySettingsModal({ isOpen, onClose, onSettingsUpdat
                         sbTestStatus.success ? 'test-success' : 'test-failure'
                       }`}
                     >
-                      {sbTestStatus.success ? '✓ ' : '⚠ '}
+                      {sbTestStatus.success ? 'Success: ' : 'Error: '}
                       {sbTestStatus.message}
                     </div>
                   )}
@@ -364,7 +363,7 @@ export default function SecuritySettingsModal({ isOpen, onClose, onSettingsUpdat
                       rel="noopener noreferrer"
                       className="link"
                     >
-                      Google Cloud Console ↗
+                      Google Cloud Console
                     </a>
                   </div>
                 </div>
