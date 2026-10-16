@@ -6,6 +6,7 @@
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
         Title="File Anomaly Scanner - Desktop Edition"
+        Icon="app.ico"
         Height="720" Width="1180"
         MinHeight="550" MinWidth="850"
         WindowStartupLocation="CenterScreen"

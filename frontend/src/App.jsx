@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
+import appLogo from './assets/app_logo.png';
 import FolderUploadSection from './components/FolderUploadSection';
 import DropZoneOverlay from './components/DropZoneOverlay';
 import ConsoleDashboard from './components/ConsoleDashboard';
@@ -193,12 +194,17 @@ export default function App() {
       {/* App Header */}
       <header className="app-header">
         <div className="app-title-area">
-          <div className="title-with-badge">
-            <h1>File Anomaly &amp; Virus Scanner</h1>
-            <span className="version-pill">v2.5 Threat Intel &amp; AST</span>
-          </div>
-          <div className="app-subtitle">
-            Zero-OOM Streaming Heuristics + PowerShell AST Engine + VirusTotal v3 &amp; Safe Browsing
+          <div className="title-brand-row">
+            <img src={appLogo} alt="File Anomaly Scanner Logo" className="app-logo-badge" />
+            <div>
+              <div className="title-with-badge">
+                <h1>File Anomaly &amp; Virus Scanner</h1>
+                <span className="version-pill">v2.5 Threat Intel &amp; AST</span>
+              </div>
+              <div className="app-subtitle">
+                Zero-OOM Streaming Heuristics + PowerShell AST Engine + VirusTotal v3 &amp; Safe Browsing
+              </div>
+            </div>
           </div>
         </div>
 

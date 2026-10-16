@@ -93,10 +93,32 @@ body {
   align-items: center;
 }
 
+.title-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.app-logo-badge {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.app-logo-badge:hover {
+  transform: scale(1.08) rotate(-2deg);
+  box-shadow: 0 6px 16px rgba(0, 220, 255, 0.4);
+}
+
 .app-title-area h1 {
   font-size: 18px;
   font-weight: 700;
-  color: #111111;
+  color: var(--text-heading);
   margin-bottom: 2px;
 }
 

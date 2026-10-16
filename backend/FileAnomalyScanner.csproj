@@ -7,7 +7,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>FileAnomalyScanner</RootNamespace>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="app.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
